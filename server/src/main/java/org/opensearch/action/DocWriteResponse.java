@@ -58,6 +58,13 @@ import java.net.URLEncoder;
 import java.util.Locale;
 import java.util.Objects;
 
+import io.grpc.Status;
+import opensearch.proto.ErrorCause;
+import opensearch.proto.NullValue;
+import opensearch.proto.ResponseItem;
+import opensearch.proto.ShardFailure;
+import opensearch.proto.ShardStatistics;
+
 import static org.opensearch.core.xcontent.XContentParserUtils.ensureExpectedToken;
 import static org.opensearch.index.seqno.SequenceNumbers.UNASSIGNED_PRIMARY_TERM;
 import static org.opensearch.index.seqno.SequenceNumbers.UNASSIGNED_SEQ_NO;
@@ -257,6 +264,12 @@ public abstract class DocWriteResponse extends ReplicationResponse implements Wr
         return getShardInfo().status();
     }
 
+    // @Override
+    // todo uncomment the override after creating base grpcStatus method
+    public Status grpcStatus() {
+        return getShardInfo().grpcStatus();
+    }
+
     /**
      * Return the relative URI for the location of the document suitable for use in the {@code Location} header. The use of relative URIs is
      * permitted as of HTTP/1.1 (cf. https://tools.ietf.org/html/rfc7231#section-7.1.2).
@@ -342,6 +355,54 @@ public abstract class DocWriteResponse extends ReplicationResponse implements Wr
             builder.field(_PRIMARY_TERM, getPrimaryTerm());
         }
         return builder;
+    }
+
+    public ResponseItem.Builder innerToProto() {
+        ResponseItem.Builder responseItem = ResponseItem.newBuilder();
+
+        responseItem.setIndex(getIndex());
+
+        if (getId().isEmpty()) {
+            // todo test if this is correct null case
+            responseItem.setId(ResponseItem.Id.newBuilder().setNullValue(NullValue.NULL_VALUE_NULL).build());
+        } else {
+            responseItem.setId(ResponseItem.Id.newBuilder().setString(getId()).build());
+        }
+
+        responseItem.setVersion(getVersion());
+        responseItem.setResult(getResult().getLowercase());
+
+        if (forcedRefresh) {
+            responseItem.setForcedRefresh(true);
+        }
+
+        // todo move getShardInfo() to a separate method
+        ReplicationResponse.ShardInfo shardInfo = getShardInfo();
+        ShardStatistics.Builder shardStatistics = ShardStatistics.newBuilder();
+        shardStatistics.setFailed(shardInfo.getFailed());
+        shardStatistics.setSuccessful(shardInfo.getSuccessful());
+        shardStatistics.setTotal(shardInfo.getTotal());
+        // todo find the corresponding field for 'skipped'
+        // shardStatistics.setSkipped(); /
+        for (ReplicationResponse.ShardInfo.Failure failure : shardInfo.getFailures()) {
+            ShardFailure.Builder shardFailure = ShardFailure.newBuilder();
+            shardFailure.setIndex(failure.index());
+            shardFailure.setNode(failure.nodeId());
+            // todo set error
+            shardFailure.setReason(ErrorCause.newBuilder().build());
+            shardFailure.setShard(failure.shardId());
+            shardFailure.setStatus(failure.status().name());
+            shardStatistics.addFailures(shardFailure);
+        }
+
+        responseItem.setShards(shardStatistics.build());
+
+        if (getSeqNo() >= 0) {
+            responseItem.setSeqNo(getSeqNo());
+            responseItem.setPrimaryTerm(getPrimaryTerm());
+        }
+
+        return responseItem;
     }
 
     /**

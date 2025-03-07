@@ -47,6 +47,18 @@ dependencies {
   // logging
   api "org.apache.logging.log4j:log4j-api:${versions.log4j}"
 
+  // grpc
+  // TODO how to not introduce this as transitive dependency to all plugins?
+  api "io.grpc:grpc-api:${versions.grpc}"
+
+  // protobuf
+  api "com.google.protobuf:protobuf-java:${versions.protobuf}"
+
+  implementation "opensearch.proto:opensearch-proto:${versions.opensearchprotobuf}"
+  // ? {
+    // exclude group: 'com.google.protobuf', module: 'protobuf-java'
+  // }
+
   testImplementation "com.carrotsearch.randomizedtesting:randomizedtesting-runner:${versions.randomizedrunner}"
   testImplementation "junit:junit:${versions.junit}"
   testImplementation "org.hamcrest:hamcrest:${versions.hamcrest}"
@@ -83,9 +95,20 @@ tasks.named("thirdPartyAudit").configure {
        'jdk.incubator.vector.VectorSpecies'
     ]
   )
+  ignoreViolations(
+    'com.google.protobuf.MessageSchema',
+    'com.google.protobuf.UnsafeUtil',
+    'com.google.protobuf.UnsafeUtil$1',
+    'com.google.protobuf.UnsafeUtil$Android32MemoryAccessor',
+    'com.google.protobuf.UnsafeUtil$Android64MemoryAccessor',
+    'com.google.protobuf.UnsafeUtil$JvmMemoryAccessor',
+    'com.google.protobuf.UnsafeUtil$MemoryAccessor'
+
+  )
 }
 
 tasks.named("dependencyLicenses").configure {
   mapping from: /jackson-.*/, to: 'jackson'
   mapping from: /lucene-.*/, to: 'lucene'
+  mapping from: /grpc-.*/, to: 'grpc'
 }

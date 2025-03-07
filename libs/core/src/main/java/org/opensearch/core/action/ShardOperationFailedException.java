@@ -39,6 +39,8 @@ import org.opensearch.core.xcontent.ToXContentObject;
 
 import java.util.Objects;
 
+import io.grpc.Status;
+
 /**
  * An exception indicating that a failure occurred performing an operation on the shard.
  *
@@ -50,6 +52,7 @@ public abstract class ShardOperationFailedException implements Writeable, ToXCon
     protected int shardId = -1;
     protected String reason;
     protected RestStatus status;
+    protected Status grpcStatus;
     protected Throwable cause;
 
     protected ShardOperationFailedException() {
@@ -61,6 +64,8 @@ public abstract class ShardOperationFailedException implements Writeable, ToXCon
         this.shardId = shardId;
         this.reason = Objects.requireNonNull(reason, "reason cannot be null");
         this.status = Objects.requireNonNull(status, "status cannot be null");
+        // todo check if feature flag grpc is enabled
+        this.grpcStatus = Objects.requireNonNull(grpcStatus, "grpc status cannot be null");
         this.cause = Objects.requireNonNull(cause, "cause cannot be null");
     }
 
@@ -91,6 +96,13 @@ public abstract class ShardOperationFailedException implements Writeable, ToXCon
      */
     public final RestStatus status() {
         return status;
+    }
+
+    /**
+     * The GRPC status of the failure.
+     */
+    public final Status grpcStatus() {
+        return grpcStatus;
     }
 
     /**

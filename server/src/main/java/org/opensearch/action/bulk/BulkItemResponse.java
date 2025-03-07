@@ -55,10 +55,17 @@ import org.opensearch.core.xcontent.MediaTypeRegistry;
 import org.opensearch.core.xcontent.ToXContentFragment;
 import org.opensearch.core.xcontent.XContentBuilder;
 import org.opensearch.core.xcontent.XContentParser;
+import org.opensearch.index.get.GetResult;
 import org.opensearch.index.mapper.MapperService;
 import org.opensearch.index.seqno.SequenceNumbers;
 
 import java.io.IOException;
+
+import io.grpc.Status;
+import opensearch.proto.ErrorCause;
+import opensearch.proto.Item;
+import opensearch.proto.NullValue;
+import opensearch.proto.ResponseItem;
 
 import static org.opensearch.core.xcontent.ConstructingObjectParser.constructorArg;
 import static org.opensearch.core.xcontent.ConstructingObjectParser.optionalConstructorArg;
@@ -84,6 +91,17 @@ public class BulkItemResponse implements Writeable, StatusToXContentObject {
         return failure == null ? response.status() : failure.getStatus();
     }
 
+    // @Override
+    // todo add back override
+    public Status grpcStatus() {
+        return failure == null ? response.grpcStatus() : failure.getGrpcStatus();
+    }
+
+    @Override
+    public String toString() {
+        return Strings.toString(MediaTypeRegistry.JSON, this);
+    }
+
     @Override
     public XContentBuilder toXContent(XContentBuilder builder, Params params) throws IOException {
         builder.startObject();
@@ -103,6 +121,69 @@ public class BulkItemResponse implements Writeable, StatusToXContentObject {
         builder.endObject();
         return builder;
     }
+
+    // Attention: Please always ensure the implementation of this method is consistent with BulkItemResponse::toXContent().
+    // @Override
+    public Item toProto() throws IOException {
+        Item.Builder itemBuilder = Item.newBuilder();
+
+        ResponseItem.Builder responseItemBuilder;
+        if (failure == null) {
+            responseItemBuilder = response.innerToProto();
+
+            responseItemBuilder.setStatus(status().getStatus());
+            responseItemBuilder.setGrpcStatus(grpcStatus().getCode().value());
+        } else {
+
+            responseItemBuilder = ResponseItem.newBuilder();
+
+            responseItemBuilder.setIndex(failure.getIndex());
+            if (getId().isEmpty()) {
+                // todo test if this is correct null case
+                responseItemBuilder.setId(ResponseItem.Id.newBuilder().setNullValue(NullValue.NULL_VALUE_NULL).build());
+            } else {
+                responseItemBuilder.setId(ResponseItem.Id.newBuilder().setString(getId()).build());
+            }
+            responseItemBuilder.setStatus(failure.getStatus().getStatus());
+            responseItemBuilder.setGrpcStatus(grpcStatus().getCode().value());
+
+            ErrorCause errorCause = OpenSearchException.generateThrowableProto(failure.getCause());
+
+            responseItemBuilder.setError(errorCause);
+        }
+
+        ResponseItem responseItem;
+        switch (getOpType()) {
+            case CREATE:
+                responseItem = responseItemBuilder.build();
+                itemBuilder.setCreate(responseItem);
+                break;
+            case INDEX:
+                responseItem = responseItemBuilder.build();
+                itemBuilder.setIndex(responseItem);
+                break;
+            case UPDATE:
+                UpdateResponse updateResponse = (UpdateResponse) getResponse();
+                if (updateResponse != null) {
+                    GetResult getResult = updateResponse.getGetResult();
+                    if (getResult != null) {
+                        responseItemBuilder.setGet(getResult.toProto());
+                    }
+                }
+                responseItem = responseItemBuilder.build();
+                itemBuilder.setUpdate(responseItem);
+                break;
+            case DELETE:
+                responseItem = responseItemBuilder.build();
+                itemBuilder.setDelete(responseItem);
+                break;
+            default:
+                throw new UnsupportedOperationException("Invalid op type: " + getOpType());
+        }
+
+        return itemBuilder.build();
+    }
+
 
     /**
      * Reads a {@link BulkItemResponse} from a {@link XContentParser}.
@@ -194,6 +275,7 @@ public class BulkItemResponse implements Writeable, StatusToXContentObject {
         private final String id;
         private final Exception cause;
         private final RestStatus status;
+        private final Status grpcStatus;
         private final long seqNo;
         private final long term;
         private final boolean aborted;
@@ -254,6 +336,7 @@ public class BulkItemResponse implements Writeable, StatusToXContentObject {
             this.id = id;
             this.cause = cause;
             this.status = status;
+            this.grpcStatus = ExceptionsHelper.grpcStatus(cause);
             this.seqNo = seqNo;
             this.term = term;
             this.aborted = aborted;
@@ -272,6 +355,7 @@ public class BulkItemResponse implements Writeable, StatusToXContentObject {
             id = in.readOptionalString();
             cause = in.readException();
             status = ExceptionsHelper.status(cause);
+            grpcStatus = ExceptionsHelper.grpcStatus(cause);
             seqNo = in.readZLong();
             term = in.readVLong();
             aborted = in.readBoolean();
@@ -316,6 +400,13 @@ public class BulkItemResponse implements Writeable, StatusToXContentObject {
          */
         public RestStatus getStatus() {
             return this.status;
+        }
+
+        /**
+         * The GRPC status.
+         */
+        public Status getGrpcStatus() {
+            return this.grpcStatus;
         }
 
         /**

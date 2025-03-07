@@ -61,6 +61,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import opensearch.proto.ErrorCause;
+
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonMap;
 import static org.opensearch.OpenSearchException.OpenSearchExceptionHandleRegistry.registerExceptionHandle;
@@ -386,6 +388,15 @@ public class OpenSearchException extends RuntimeException implements Writeable, 
         return builder;
     }
 
+    public ErrorCause toProto() throws IOException {
+        Throwable ex = ExceptionsHelper.unwrapCause(this);
+        if (ex != this) {
+            return generateThrowableProto(ex);
+        } else {
+            return innerToProto(this, getExceptionName(), getMessage(), getCause());
+        }
+    }
+
     protected static void innerToXContent(
         XContentBuilder builder,
         ToXContent.Params params,
@@ -439,6 +450,41 @@ public class OpenSearchException extends RuntimeException implements Writeable, 
             }
             builder.endArray();
         }
+    }
+
+    // Please keep this method consistent with innerToXContent()
+    protected static ErrorCause innerToProto(Throwable throwable, String type, String message, Throwable cause) throws IOException {
+        // todo once ErrorCause is mved to this package, stop using reflection to set field names
+        ErrorCause.Builder errorCauseBuilder = ErrorCause.newBuilder();
+        errorCauseBuilder.setType(type);
+        errorCauseBuilder.setReason(message);
+
+        // todo needed?
+        // if (throwable instanceof OpenSearchException) {
+        // OpenSearchException exception = (OpenSearchException) throwable;
+        // exception.metadataToXContent(builder, params);
+        // }
+
+        // todo how to pass params?
+        // if (params.paramAsBoolean(REST_EXCEPTION_SKIP_CAUSE, REST_EXCEPTION_SKIP_CAUSE_DEFAULT) == false) {
+        if (cause != null) {
+            errorCauseBuilder.setCausedBy(generateThrowableProto(cause));
+        }
+        // }
+
+        // todo how to pass params?
+        // if (params.paramAsBoolean(REST_EXCEPTION_SKIP_STACK_TRACE, REST_EXCEPTION_SKIP_STACK_TRACE_DEFAULT) == false) {
+        errorCauseBuilder.setStackTrace(ExceptionsHelper.stackTrace(throwable));
+        // }
+
+        Throwable[] allSuppressed = throwable.getSuppressed();
+        if (allSuppressed.length > 0) {
+            for (Throwable suppressed : allSuppressed) {
+                errorCauseBuilder.addSuppressed(generateThrowableProto(suppressed));
+            }
+        }
+
+        return errorCauseBuilder.build();
     }
 
     protected static void headerToXContent(XContentBuilder builder, String key, List<String> values) throws IOException {
@@ -600,6 +646,27 @@ public class OpenSearchException extends RuntimeException implements Writeable, 
             ((OpenSearchException) t).toXContent(builder, params);
         } else {
             innerToXContent(builder, params, t, getExceptionName(t), t.getMessage(), emptyMap(), emptyMap(), t.getCause());
+        }
+    }
+
+    // Please keep this method consistent with generateThrowableXContent()
+    /**
+     * Static toXContent helper method that renders {@link OpenSearchException} or {@link Throwable} instances
+     * as XContent, delegating the rendering to {@link OpenSearchException#toXContent(XContentBuilder, ToXContent.Params)}
+     * or {@link #innerToXContent(XContentBuilder, ToXContent.Params, Throwable, String, String, Map, Map, Throwable)}.
+     * <p>
+     * This method is usually used when the {@link Throwable} is rendered as a part of another XContent object, and its result can
+     * be parsed back using the {@code OpenSearchException.fromXContent(XContentParser)} method.
+     */
+    // todo needs to return "ErrorCause" type, but will have circular dependency on OpenSearch/server package. return 'Message' for now, and
+    // move 'ErrorCause' proto definition to this package later.
+    public static ErrorCause generateThrowableProto(Throwable t) throws IOException {
+        t = ExceptionsHelper.unwrapCause(t);
+
+        if (t instanceof OpenSearchException) {
+            return ((OpenSearchException) t).toProto();
+        } else {
+            return innerToProto(t, getExceptionName(t), t.getMessage(), t.getCause());
         }
     }
 

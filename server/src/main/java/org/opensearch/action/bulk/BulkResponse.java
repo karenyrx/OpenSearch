@@ -32,13 +32,17 @@
 
 package org.opensearch.action.bulk;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.opensearch.common.annotation.PublicApi;
 import org.opensearch.common.unit.TimeValue;
 import org.opensearch.common.xcontent.StatusToXContentObject;
 import org.opensearch.core.action.ActionResponse;
+import org.opensearch.core.common.Strings;
 import org.opensearch.core.common.io.stream.StreamInput;
 import org.opensearch.core.common.io.stream.StreamOutput;
 import org.opensearch.core.rest.RestStatus;
+import org.opensearch.core.xcontent.MediaTypeRegistry;
 import org.opensearch.core.xcontent.XContentBuilder;
 import org.opensearch.core.xcontent.XContentParser;
 
@@ -47,6 +51,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+
+import opensearch.proto.BulkResponseBody;
 
 import static org.opensearch.core.xcontent.XContentParserUtils.ensureExpectedToken;
 import static org.opensearch.core.xcontent.XContentParserUtils.throwUnknownField;
@@ -61,6 +67,7 @@ import static org.opensearch.core.xcontent.XContentParserUtils.throwUnknownToken
  */
 @PublicApi(since = "1.0.0")
 public class BulkResponse extends ActionResponse implements Iterable<BulkItemResponse>, StatusToXContentObject {
+    protected static Logger logger = LogManager.getLogger(BulkResponse.class);
 
     private static final String ITEMS = "items";
     private static final String ERRORS = "errors";
@@ -163,6 +170,11 @@ public class BulkResponse extends ActionResponse implements Iterable<BulkItemRes
     }
 
     @Override
+    public String toString() {
+        return Strings.toString(MediaTypeRegistry.JSON, this);
+    }
+
+    @Override
     public RestStatus status() {
         return RestStatus.OK;
     }
@@ -182,6 +194,30 @@ public class BulkResponse extends ActionResponse implements Iterable<BulkItemRes
         builder.endArray();
         builder.endObject();
         return builder;
+    }
+
+    /**
+     * Ensure the implementation is consistent with {@code BulkResponse::toXContent()}.
+     *  @return the proto representation of this object
+     */
+    // @Override
+    // todo do we need Params params?
+    public opensearch.proto.BulkResponse toProto() throws IOException {
+        opensearch.proto.BulkResponse.Builder bulkResponse = opensearch.proto.BulkResponse.newBuilder();
+
+        BulkResponseBody.Builder bulkResponseBody = BulkResponseBody.newBuilder();
+        bulkResponseBody.setTook(getTook().getMillis());
+        if (ingestTookInMillis != BulkResponse.NO_INGEST_TOOK) {
+            bulkResponseBody.setIngestTook(ingestTookInMillis);
+        }
+
+        bulkResponseBody.setErrors(hasFailures());
+        for (org.opensearch.action.bulk.BulkItemResponse bulkItemResponse : getItems()) {
+            bulkResponseBody.addItems(bulkItemResponse.toProto());
+        }
+
+        bulkResponse.setBulkResponseBody(bulkResponseBody.build());
+        return bulkResponse.build();
     }
 
     public static BulkResponse fromXContent(XContentParser parser) throws IOException {

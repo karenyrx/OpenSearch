@@ -110,7 +110,17 @@ dependencies {
 
   // protobuf
   api libs.protobuf
+  api libs.protobuf.util
   api libs.jakartaannotation
+
+  // client-server protobufs
+  implementation libs.opensearch.protobuf
+  //  {
+    // exclude group: 'com.google.protobuf', module: 'protobuf-java'
+  // }
+
+  // gRPC dependencies
+  api libs.grpc.stub
 
   // https://mvnrepository.com/artifact/org.roaringbitmap/RoaringBitmap
   api libs.roaringbitmap
@@ -346,6 +356,7 @@ tasks.named("thirdPartyAudit").configure {
 }
 
 tasks.named("dependencyLicenses").configure {
+    mapping from: /grpc-.*/, to: 'grpc'
     mapping from: /jackson-.*/, to: 'jackson'
     mapping from: /reactor-.*/, to: 'reactor'
     mapping from: /lucene-.*/, to: 'lucene'
