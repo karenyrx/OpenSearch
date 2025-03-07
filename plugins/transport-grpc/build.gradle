@@ -90,8 +90,6 @@ thirdPartyAudit {
 
     'com.google.gson.stream.JsonReader',
     'com.google.gson.stream.JsonToken',
-    'com.google.protobuf.util.Durations',
-    'com.google.protobuf.util.Timestamps',
     'com.google.protobuf.nano.CodedOutputByteBufferNano',
     'com.google.protobuf.nano.MessageNano',
     'com.google.rpc.Status',
