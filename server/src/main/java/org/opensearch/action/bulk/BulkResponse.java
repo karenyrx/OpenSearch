@@ -52,7 +52,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import opensearch.proto.BulkResponseBody;
+import org.opensearch.protobuf.BulkResponseBody;
 
 import static org.opensearch.core.xcontent.XContentParserUtils.ensureExpectedToken;
 import static org.opensearch.core.xcontent.XContentParserUtils.throwUnknownField;
@@ -202,8 +202,8 @@ public class BulkResponse extends ActionResponse implements Iterable<BulkItemRes
      */
     // @Override
     // todo do we need Params params?
-    public opensearch.proto.BulkResponse toProto() throws IOException {
-        opensearch.proto.BulkResponse.Builder bulkResponse = opensearch.proto.BulkResponse.newBuilder();
+    public org.opensearch.protobuf.BulkResponse toProto() throws IOException {
+        org.opensearch.protobuf.BulkResponse.Builder bulkResponse = org.opensearch.protobuf.BulkResponse.newBuilder();
 
         BulkResponseBody.Builder bulkResponseBody = BulkResponseBody.newBuilder();
         bulkResponseBody.setTook(getTook().getMillis());

@@ -54,7 +54,7 @@ dependencies {
   // protobuf
   api "com.google.protobuf:protobuf-java:${versions.protobuf}"
 
-  implementation "opensearch.proto:opensearch-proto:${versions.opensearchprotobuf}"
+  implementation "org.opensearch.protobuf:opensearch-protobuf:${versions.opensearchprotobuf}"
   // ? {
     // exclude group: 'com.google.protobuf', module: 'protobuf-java'
   // }

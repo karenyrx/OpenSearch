@@ -144,7 +144,6 @@ compileJava {
   options.compilerArgs += ['-processor', ['org.apache.logging.log4j.core.config.plugins.processor.PluginProcessor',
     'org.opensearch.common.annotation.processor.ApiAnnotationProcessor'].join(',')]
 }
-
 tasks.named("internalClusterTest").configure {
   // TODO: these run faster with C2 only because they run for so, so long
   jvmArgs -= '-XX:TieredStopAtLevel=1'

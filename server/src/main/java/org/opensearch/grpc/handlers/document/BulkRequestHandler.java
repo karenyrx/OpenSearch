@@ -25,13 +25,13 @@ import org.opensearch.transport.client.node.NodeClient;
 
 import java.io.IOException;
 
-import opensearch.proto.BulkRequestBody;
-import opensearch.proto.CreateOperation;
-import opensearch.proto.DeleteOperation;
-import opensearch.proto.IndexOperation;
-import opensearch.proto.Script;
-import opensearch.proto.UpdateOperation;
-import opensearch.proto.WaitForActiveShards;
+import org.opensearch.protobuf.BulkRequestBody;
+import org.opensearch.protobuf.CreateOperation;
+import org.opensearch.protobuf.DeleteOperation;
+import org.opensearch.protobuf.IndexOperation;
+import org.opensearch.protobuf.Script;
+import org.opensearch.protobuf.UpdateOperation;
+import org.opensearch.protobuf.WaitForActiveShards;
 
 public class BulkRequestHandler {  // todo extend some common BaseGrpcHandler
     protected static Logger logger = LogManager.getLogger(BulkRequestHandler.class);
@@ -46,7 +46,7 @@ public class BulkRequestHandler {  // todo extend some common BaseGrpcHandler
         this.client = client;
     }
 
-    public opensearch.proto.BulkResponse executeRequest(opensearch.proto.BulkRequest request) throws IOException {
+    public org.opensearch.protobuf.BulkResponse executeRequest(org.opensearch.protobuf.BulkRequest request) throws IOException {
         return client.bulk(prepareRequest(request)).actionGet().toProto();
     }
 
@@ -61,7 +61,7 @@ public class BulkRequestHandler {  // todo extend some common BaseGrpcHandler
      * @throws IOException if an I/O exception occurred parsing the request and preparing for
      *                     execution
      */
-    public org.opensearch.action.bulk.BulkRequest prepareRequest(opensearch.proto.BulkRequest request) throws IOException {
+    public org.opensearch.action.bulk.BulkRequest prepareRequest(org.opensearch.protobuf.BulkRequest request) throws IOException {
         // logger.info("=== bulkRequest = " + request.toString());
         int payloadSize = request.toByteArray().length;
         // logger.info("Bulk request payload size: {} bytes in GRPC", payloadSize);

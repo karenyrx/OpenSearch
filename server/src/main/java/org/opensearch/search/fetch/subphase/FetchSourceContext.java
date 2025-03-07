@@ -53,8 +53,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import opensearch.proto.SourceConfig;
-import opensearch.proto.SourceFilter;
+import org.opensearch.protobuf.SourceConfig;
+import org.opensearch.protobuf.SourceFilter;
 
 /**
  * Context used to fetch the {@code _source}.

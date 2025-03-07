@@ -59,11 +59,11 @@ import java.util.Locale;
 import java.util.Objects;
 
 import io.grpc.Status;
-import opensearch.proto.ErrorCause;
-import opensearch.proto.NullValue;
-import opensearch.proto.ResponseItem;
-import opensearch.proto.ShardFailure;
-import opensearch.proto.ShardStatistics;
+import org.opensearch.protobuf.ErrorCause;
+import org.opensearch.protobuf.NullValue;
+import org.opensearch.protobuf.ResponseItem;
+import org.opensearch.protobuf.ShardFailure;
+import org.opensearch.protobuf.ShardStatistics;
 
 import static org.opensearch.core.xcontent.XContentParserUtils.ensureExpectedToken;
 import static org.opensearch.index.seqno.SequenceNumbers.UNASSIGNED_PRIMARY_TERM;

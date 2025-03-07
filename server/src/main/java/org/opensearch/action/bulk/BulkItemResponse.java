@@ -62,10 +62,10 @@ import org.opensearch.index.seqno.SequenceNumbers;
 import java.io.IOException;
 
 import io.grpc.Status;
-import opensearch.proto.ErrorCause;
-import opensearch.proto.Item;
-import opensearch.proto.NullValue;
-import opensearch.proto.ResponseItem;
+import org.opensearch.protobuf.ErrorCause;
+import org.opensearch.protobuf.Item;
+import org.opensearch.protobuf.NullValue;
+import org.opensearch.protobuf.ResponseItem;
 
 import static org.opensearch.core.xcontent.ConstructingObjectParser.constructorArg;
 import static org.opensearch.core.xcontent.ConstructingObjectParser.optionalConstructorArg;
@@ -183,7 +183,6 @@ public class BulkItemResponse implements Writeable, StatusToXContentObject {
 
         return itemBuilder.build();
     }
-
 
     /**
      * Reads a {@link BulkItemResponse} from a {@link XContentParser}.

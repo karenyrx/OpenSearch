@@ -15,9 +15,9 @@ import org.opensearch.grpc.handlers.document.BulkRequestHandler;
 import org.opensearch.transport.client.node.NodeClient;
 
 import io.grpc.stub.StreamObserver;
-import opensearch.proto.BulkRequest;
-import opensearch.proto.BulkResponse;
-import opensearch.proto.services.DocumentServiceGrpc;
+import org.opensearch.protobuf.BulkRequest;
+import org.opensearch.protobuf.BulkResponse;
+import org.opensearch.protobuf.services.DocumentServiceGrpc;
 
 public class DocumentServiceImpl extends DocumentServiceGrpc.DocumentServiceImplBase {
     private static final Logger logger = LogManager.getLogger(DocumentServiceImpl.class);

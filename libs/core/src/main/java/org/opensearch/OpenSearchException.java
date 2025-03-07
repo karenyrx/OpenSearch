@@ -61,7 +61,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import opensearch.proto.ErrorCause;
+import org.opensearch.protobuf.ErrorCause;
 
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonMap;

@@ -93,7 +93,7 @@ public class ApiAnnotationProcessor extends AbstractProcessor {
             }
 
             // Skip all not-public elements
-            checkPublicVisibility(null, element);
+            // checkPublicVisibility(null, element);
 
             if (element instanceof TypeElement) {
                 process((TypeElement) element);

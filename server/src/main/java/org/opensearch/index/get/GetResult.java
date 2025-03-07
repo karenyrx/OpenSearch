@@ -62,7 +62,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
-import opensearch.proto.InlineGetDictUserDefined;
+import org.opensearch.protobuf.InlineGetDictUserDefined;
 
 import static java.util.Collections.emptyMap;
 import static org.opensearch.core.xcontent.XContentParserUtils.ensureExpectedToken;
@@ -294,7 +294,6 @@ public class GetResult implements Writeable, Iterable<DocumentField>, ToXContent
         return allFields.values().iterator();
     }
 
-
     public XContentBuilder toXContentEmbedded(XContentBuilder builder, Params params) throws IOException {
         if (seqNo != UNASSIGNED_SEQ_NO) { // seqNo may not be assigned if read from an old node
             builder.field(_SEQ_NO, seqNo);
@@ -326,20 +325,20 @@ public class GetResult implements Writeable, Iterable<DocumentField>, ToXContent
         return builder;
     }
 
-    public InlineGetDictUserDefined.Builder toProtoEmbedded(InlineGetDictUserDefined.Builder builder){
-        if(seqNo != UNASSIGNED_SEQ_NO){
+    public InlineGetDictUserDefined.Builder toProtoEmbedded(InlineGetDictUserDefined.Builder builder) {
+        if (seqNo != UNASSIGNED_SEQ_NO) {
             builder.setSeqNo(seqNo);
             builder.setPrimaryTerm(primaryTerm);
         }
 
         // TODO
         // for (DocumentField field : metaFields.values()) {
-        //     // TODO: can we avoid having an exception here?
-        //     if (field.getName().equals(IgnoredFieldMapper.NAME)) {
-        //         builder.field(field.getName(), field.getValues());
-        //     } else {
-        //         builder.field(field.getName(), field.<Object>getValue());
-        //     }
+        // // TODO: can we avoid having an exception here?
+        // if (field.getName().equals(IgnoredFieldMapper.NAME)) {
+        // builder.field(field.getName(), field.getValues());
+        // } else {
+        // builder.field(field.getName(), field.<Object>getValue());
+        // }
         // }
 
         builder.setFound(exists);
@@ -350,9 +349,9 @@ public class GetResult implements Writeable, Iterable<DocumentField>, ToXContent
 
         // TODO
         // if (!documentFields.isEmpty()) {
-        //     for (DocumentField field : documentFields.values()) {
-        //         field.toXContent(builder, params);
-        //     }
+        // for (DocumentField field : documentFields.values()) {
+        // field.toXContent(builder, params);
+        // }
         // }
         return builder;
     }
@@ -382,8 +381,8 @@ public class GetResult implements Writeable, Iterable<DocumentField>, ToXContent
         // builder.setIndex(index);
         // builder.setId(id);
 
-        if (isExists()){
-            if (version != -1){
+        if (isExists()) {
+            if (version != -1) {
                 // builder.setVersion(version);
             }
             toProtoEmbedded(builder);
