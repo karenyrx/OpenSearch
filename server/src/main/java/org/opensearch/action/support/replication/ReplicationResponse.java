@@ -53,8 +53,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import io.grpc.Status;
-
 import static org.opensearch.core.xcontent.XContentParserUtils.ensureExpectedToken;
 
 /**
@@ -167,15 +165,15 @@ public class ReplicationResponse extends ActionResponse {
             return status;
         }
 
-        public Status grpcStatus() {
-            Status grpcStatus = Status.OK;
-            for (Failure failure : failures) {
-                if (failure.primary() && (failure.grpcStatus().getCode().value() > grpcStatus.getCode().value())) {
-                    grpcStatus = failure.grpcStatus();
-                }
-            }
-            return grpcStatus;
-        }
+        // public Status grpcStatus() {
+        //     Status grpcStatus = Status.OK;
+        //     for (Failure failure : failures) {
+        //         if (failure.primary() && (failure.grpcStatus().getCode().value() > grpcStatus.getCode().value())) {
+        //             grpcStatus = failure.grpcStatus();
+        //         }
+        //     }
+        //     return grpcStatus;
+        // }
 
         @Override
         public void writeTo(StreamOutput out) throws IOException {

@@ -44,8 +44,6 @@ import org.opensearch.transport.client.Client;
 
 import java.io.IOException;
 
-import io.grpc.Status;
-
 import static org.opensearch.core.xcontent.XContentParserUtils.ensureExpectedToken;
 
 /**
@@ -83,12 +81,6 @@ public class IndexResponse extends DocWriteResponse {
     @Override
     public RestStatus status() {
         return result == Result.CREATED ? RestStatus.CREATED : super.status();
-    }
-
-    // @Override
-    // todo uncomment the override after creating base grpcStatus method
-    public Status grpcStatus() {
-        return result == Result.CREATED ? Status.OK : super.grpcStatus();
     }
 
     @Override

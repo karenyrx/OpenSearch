@@ -114,13 +114,13 @@ dependencies {
   api libs.jakartaannotation
 
   // client-server protobufs
-  implementation libs.opensearch.protobuf
+  // implementation libs.opensearch.protobuf
   //  {
     // exclude group: 'com.google.protobuf', module: 'protobuf-java'
   // }
 
   // gRPC dependencies
-  api libs.grpc.stub
+  // api libs.grpc.stub
 
   // https://mvnrepository.com/artifact/org.roaringbitmap/RoaringBitmap
   api libs.roaringbitmap

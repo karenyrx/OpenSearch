@@ -52,8 +52,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import org.opensearch.protobuf.BulkResponseBody;
-
 import static org.opensearch.core.xcontent.XContentParserUtils.ensureExpectedToken;
 import static org.opensearch.core.xcontent.XContentParserUtils.throwUnknownField;
 import static org.opensearch.core.xcontent.XContentParserUtils.throwUnknownToken;
@@ -196,29 +194,7 @@ public class BulkResponse extends ActionResponse implements Iterable<BulkItemRes
         return builder;
     }
 
-    /**
-     * Ensure the implementation is consistent with {@code BulkResponse::toXContent()}.
-     *  @return the proto representation of this object
-     */
-    // @Override
-    // todo do we need Params params?
-    public org.opensearch.protobuf.BulkResponse toProto() throws IOException {
-        org.opensearch.protobuf.BulkResponse.Builder bulkResponse = org.opensearch.protobuf.BulkResponse.newBuilder();
-
-        BulkResponseBody.Builder bulkResponseBody = BulkResponseBody.newBuilder();
-        bulkResponseBody.setTook(getTook().getMillis());
-        if (ingestTookInMillis != BulkResponse.NO_INGEST_TOOK) {
-            bulkResponseBody.setIngestTook(ingestTookInMillis);
-        }
-
-        bulkResponseBody.setErrors(hasFailures());
-        for (org.opensearch.action.bulk.BulkItemResponse bulkItemResponse : getItems()) {
-            bulkResponseBody.addItems(bulkItemResponse.toProto());
-        }
-
-        bulkResponse.setBulkResponseBody(bulkResponseBody.build());
-        return bulkResponse.build();
-    }
+    // Method moved to org.opensearch.transport.grpc.proto.BulkResponseProtoUtils
 
     public static BulkResponse fromXContent(XContentParser parser) throws IOException {
         XContentParser.Token token = parser.nextToken();

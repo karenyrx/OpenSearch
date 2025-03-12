@@ -124,7 +124,6 @@ netty-resolver-dns = { group = "io.netty", name = "netty-resolver-dns", version.
 netty-resolver = { group = "io.netty", name = "netty-resolver", version.ref = "netty" }
 netty-transport = { group = "io.netty", name = "netty-transport", version.ref = "netty" }
 netty-transport-native-unix-common = { group = "io.netty", name = "netty-transport-native-unix-common", version.ref = "netty" }
-opensearch-protobuf = { group = "org.opensearch.protobuf", name = "opensearch-protobuf", version.ref = "opensearchprotobuf" }
 protobuf = { group = "com.google.protobuf", name = "protobuf-java", version.ref = "protobuf" }
 protobuf-util = { group = "com.google.protobuf", name = "protobuf-java-util", version.ref = "protobuf" }
 reactivestreams = { group = "org.reactivestreams", name = "reactive-streams", version.ref = "reactivestreams" }

@@ -62,8 +62,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
-import org.opensearch.protobuf.InlineGetDictUserDefined;
-
 import static java.util.Collections.emptyMap;
 import static org.opensearch.core.xcontent.XContentParserUtils.ensureExpectedToken;
 import static org.opensearch.index.seqno.SequenceNumbers.UNASSIGNED_PRIMARY_TERM;
@@ -325,36 +323,6 @@ public class GetResult implements Writeable, Iterable<DocumentField>, ToXContent
         return builder;
     }
 
-    public InlineGetDictUserDefined.Builder toProtoEmbedded(InlineGetDictUserDefined.Builder builder) {
-        if (seqNo != UNASSIGNED_SEQ_NO) {
-            builder.setSeqNo(seqNo);
-            builder.setPrimaryTerm(primaryTerm);
-        }
-
-        // TODO
-        // for (DocumentField field : metaFields.values()) {
-        // // TODO: can we avoid having an exception here?
-        // if (field.getName().equals(IgnoredFieldMapper.NAME)) {
-        // builder.field(field.getName(), field.getValues());
-        // } else {
-        // builder.field(field.getName(), field.<Object>getValue());
-        // }
-        // }
-
-        builder.setFound(exists);
-
-        if (source != null) {
-            builder.setSource(ByteString.copyFrom(source()));
-        }
-
-        // TODO
-        // if (!documentFields.isEmpty()) {
-        // for (DocumentField field : documentFields.values()) {
-        // field.toXContent(builder, params);
-        // }
-        // }
-        return builder;
-    }
 
     @Override
     public XContentBuilder toXContent(XContentBuilder builder, Params params) throws IOException {
@@ -373,24 +341,6 @@ public class GetResult implements Writeable, Iterable<DocumentField>, ToXContent
         return builder;
     }
 
-    /**
-     * Ensure impementation matches with {@code toXContent()}
-     */
-    public InlineGetDictUserDefined toProto() {
-        InlineGetDictUserDefined.Builder builder = InlineGetDictUserDefined.newBuilder();
-        // builder.setIndex(index);
-        // builder.setId(id);
-
-        if (isExists()) {
-            if (version != -1) {
-                // builder.setVersion(version);
-            }
-            toProtoEmbedded(builder);
-        } else {
-            builder.setFound(false);
-        }
-        return builder.build();
-    }
 
     public static GetResult fromXContentEmbedded(XContentParser parser) throws IOException {
         XContentParser.Token token = parser.nextToken();

@@ -54,11 +54,6 @@ dependencies {
   // protobuf
   api "com.google.protobuf:protobuf-java:${versions.protobuf}"
 
-  implementation "org.opensearch.protobuf:opensearch-protobuf:${versions.opensearchprotobuf}"
-  // ? {
-    // exclude group: 'com.google.protobuf', module: 'protobuf-java'
-  // }
-
   testImplementation "com.carrotsearch.randomizedtesting:randomizedtesting-runner:${versions.randomizedrunner}"
   testImplementation "junit:junit:${versions.junit}"
   testImplementation "org.hamcrest:hamcrest:${versions.hamcrest}"

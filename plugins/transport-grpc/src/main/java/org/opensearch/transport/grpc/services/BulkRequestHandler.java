@@ -6,7 +6,7 @@
  * compatible open source license.
  */
 
-package org.opensearch.grpc.handlers.document;
+package org.opensearch.transport.grpc.services;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -20,8 +20,9 @@ import org.opensearch.core.xcontent.MediaTypeRegistry;
 import org.opensearch.index.VersionType;
 import org.opensearch.rest.RestRequest;
 import org.opensearch.rest.action.document.RestBulkAction;
-import org.opensearch.search.fetch.subphase.FetchSourceContext;
+import org.opensearch.transport.grpc.proto.FetchSourceContextProtoUtils;
 import org.opensearch.transport.client.node.NodeClient;
+import org.opensearch.transport.grpc.proto.BulkResponseProtoUtils;
 
 import java.io.IOException;
 
@@ -33,6 +34,11 @@ import org.opensearch.protobuf.Script;
 import org.opensearch.protobuf.UpdateOperation;
 import org.opensearch.protobuf.WaitForActiveShards;
 
+/**
+ * Handler for bulk requests in gRPC.
+ * This class was moved from server/src/main/java/org/opensearch/grpc/handlers/document/BulkRequestHandler.java
+ * to the transport-grpc module.
+ */
 public class BulkRequestHandler {  // todo extend some common BaseGrpcHandler
     protected static Logger logger = LogManager.getLogger(BulkRequestHandler.class);
 
@@ -47,7 +53,7 @@ public class BulkRequestHandler {  // todo extend some common BaseGrpcHandler
     }
 
     public org.opensearch.protobuf.BulkResponse executeRequest(org.opensearch.protobuf.BulkRequest request) throws IOException {
-        return client.bulk(prepareRequest(request)).actionGet().toProto();
+        return BulkResponseProtoUtils.toProto(client.bulk(prepareRequest(request)).actionGet());
     }
 
     /**
@@ -312,7 +318,8 @@ public class BulkRequestHandler {  // todo extend some common BaseGrpcHandler
         }
 
         if (bulkRequestBody.hasSource()) {
-            FetchSourceContext fetchSourceContext = FetchSourceContext.fromProto(bulkRequestBody.getSource());
+            org.opensearch.search.fetch.subphase.FetchSourceContext fetchSourceContext =
+                FetchSourceContextProtoUtils.fromProto(bulkRequestBody.getSource());
             updateRequest.fetchSource(fetchSourceContext);
         }
 

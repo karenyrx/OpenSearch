@@ -6,13 +6,18 @@
  * compatible open source license.
  */
 
-package org.opensearch.grpc.common;
+package org.opensearch.transport.grpc.common;
 
 import java.util.NoSuchElementException;
 import java.util.concurrent.TimeoutException;
 
 import io.grpc.Status;
 
+/**
+ * Handler for converting Java exceptions to gRPC Status exceptions.
+ * This class was moved from server/src/main/java/org/opensearch/grpc/common/ExceptionHandler.java
+ * to the transport-grpc module.
+ */
 public class ExceptionHandler {
 
     // TODO consolidate this with ExceptionsHelper.grpcStatus()

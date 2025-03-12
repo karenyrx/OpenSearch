@@ -53,9 +53,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import org.opensearch.protobuf.SourceConfig;
-import org.opensearch.protobuf.SourceFilter;
-
 /**
  * Context used to fetch the {@code _source}.
  *
@@ -229,42 +226,6 @@ public class FetchSourceContext implements Writeable, ToXContentObject {
                     + "]",
                 parser.getTokenLocation()
             );
-        }
-        return new FetchSourceContext(fetchSource, includes, excludes);
-    }
-
-    /**
-     *
-     *  Ensure implementation of fromProto() should be kept consistent with that of {@code fromXContent()}.
-     * */
-    public static FetchSourceContext fromProto(SourceConfig sourceConfig) {
-        boolean fetchSource = true;
-        String[] includes = Strings.EMPTY_ARRAY;
-        String[] excludes = Strings.EMPTY_ARRAY;
-        if (sourceConfig.getSourceConfigCase() == SourceConfig.SourceConfigCase.FETCH) {
-            fetchSource = sourceConfig.getFetch();
-        } else if (sourceConfig.hasIncludes()) {
-            ArrayList<String> list = new ArrayList<>();
-            for (String string : sourceConfig.getIncludes().getStringArrayList()) {
-                list.add(string);
-            }
-            includes = list.toArray(new String[0]);
-        } else if (sourceConfig.hasFilter()) {
-            String currentFieldName = null;
-            SourceFilter sourceFilter = sourceConfig.getFilter();
-            if (!sourceFilter.getIncludesList().isEmpty()) {
-                List<String> includesList = new ArrayList<>();
-                for (String s : sourceFilter.getIncludesList()) {
-                    includesList.add(s);
-                }
-                includes = includesList.toArray(new String[0]);
-            } else if (!sourceFilter.getExcludesList().isEmpty()) {
-                List<String> excludesList = new ArrayList<>();
-                for (String s : sourceFilter.getExcludesList()) {
-                    excludesList.add(s);
-                }
-                excludes = excludesList.toArray(new String[0]);
-            }
         }
         return new FetchSourceContext(fetchSource, includes, excludes);
     }

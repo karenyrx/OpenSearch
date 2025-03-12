@@ -111,23 +111,23 @@ public final class ExceptionsHelper {
         return RestStatus.INTERNAL_SERVER_ERROR;
     }
 
-    public static Status grpcStatus(Throwable t) {
-        if (t != null) {
-            // if (t instanceof OpenSearchException) {
-            // return ((OpenSearchException) t).status();
-            // } else
-            // if (t instanceof IllegalArgumentException) {
-            return Status.INVALID_ARGUMENT;
-        } else if (t instanceof JsonParseException) {
-            return Status.INVALID_ARGUMENT;
-        } else if (t instanceof OpenSearchRejectedExecutionException) {
-            return Status.RESOURCE_EXHAUSTED;
-        } else if (t instanceof NotXContentException) {
-            return Status.INVALID_ARGUMENT;
-        }
+    // public static Status grpcStatus(Throwable t) {
+    //     if (t != null) {
+    //         // if (t instanceof OpenSearchException) {
+    //         // return ((OpenSearchException) t).status();
+    //         // } else
+    //         // if (t instanceof IllegalArgumentException) {
+    //         return Status.INVALID_ARGUMENT;
+    //     } else if (t instanceof JsonParseException) {
+    //         return Status.INVALID_ARGUMENT;
+    //     } else if (t instanceof OpenSearchRejectedExecutionException) {
+    //         return Status.RESOURCE_EXHAUSTED;
+    //     } else if (t instanceof NotXContentException) {
+    //         return Status.INVALID_ARGUMENT;
+    //     }
 
-        return Status.INTERNAL;
-    }
+    //     return Status.INTERNAL;
+    // }
 
     public static String summaryMessage(Throwable t) {
         if (t != null) {
