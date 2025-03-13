@@ -11,22 +11,13 @@ import org.gradle.api.attributes.java.TargetJvmEnvironment
 opensearchplugin {
   description = 'gRPC based transport implementation'
   classname = 'org.opensearch.transport.grpc.GrpcPlugin'
-  extendedPlugins = []
-}
-
-// Create a custom configuration for Guava
-configurations {
-  guava
 }
 
 dependencies {
   compileOnly "com.google.code.findbugs:jsr305:3.0.2"
-
-  // Add Guava to the custom configuration
-  guava "com.google.guava:guava:${versions.guava}"
-  guava "com.google.guava:failureaccess:1.0.2"
-
+  runtimeOnly "com.google.guava:guava:${versions.guava}"
   implementation "com.google.errorprone:error_prone_annotations:2.24.1"
+  implementation "com.google.guava:failureaccess:1.0.1"
   implementation "io.grpc:grpc-api:${versions.grpc}"
   implementation "io.grpc:grpc-core:${versions.grpc}"
   implementation "io.grpc:grpc-netty-shaded:${versions.grpc}"
@@ -36,6 +27,7 @@ dependencies {
   implementation "io.grpc:grpc-stub:${versions.grpc}"
   implementation "io.grpc:grpc-util:${versions.grpc}"
   implementation "io.perfmark:perfmark-api:0.26.0"
+  implementation "org.opensearch.protobuf:opensearch-protobuf:${versions.opensearchprotobuf}"
 }
 
 tasks.named("dependencyLicenses").configure {
