@@ -110,17 +110,7 @@ dependencies {
 
   // protobuf
   api libs.protobuf
-  api libs.protobuf.util
   api libs.jakartaannotation
-
-  // client-server protobufs
-  // implementation libs.opensearch.protobuf
-  //  {
-    // exclude group: 'com.google.protobuf', module: 'protobuf-java'
-  // }
-
-  // gRPC dependencies
-  // api libs.grpc.stub
 
   // https://mvnrepository.com/artifact/org.roaringbitmap/RoaringBitmap
   api libs.roaringbitmap
@@ -144,6 +134,7 @@ compileJava {
   options.compilerArgs += ['-processor', ['org.apache.logging.log4j.core.config.plugins.processor.PluginProcessor',
     'org.opensearch.common.annotation.processor.ApiAnnotationProcessor'].join(',')]
 }
+
 tasks.named("internalClusterTest").configure {
   // TODO: these run faster with C2 only because they run for so, so long
   jvmArgs -= '-XX:TieredStopAtLevel=1'
@@ -355,7 +346,6 @@ tasks.named("thirdPartyAudit").configure {
 }
 
 tasks.named("dependencyLicenses").configure {
-    mapping from: /grpc-.*/, to: 'grpc'
     mapping from: /jackson-.*/, to: 'jackson'
     mapping from: /reactor-.*/, to: 'reactor'
     mapping from: /lucene-.*/, to: 'lucene'

@@ -367,21 +367,20 @@ public class ApiAnnotationProcessor extends AbstractProcessor {
 
         checkPublicVisibility(referencedBy, element);
 
-        // [TEMP] TODO uncomment out later
-        // if (element.getAnnotation(PublicApi.class) == null
-        //     && element.getAnnotation(ExperimentalApi.class) == null
-        //     && element.getAnnotation(DeprecatedApi.class) == null) {
-        //     reported.add(element);
+        if (element.getAnnotation(PublicApi.class) == null
+            && element.getAnnotation(ExperimentalApi.class) == null
+            && element.getAnnotation(DeprecatedApi.class) == null) {
+            reported.add(element);
 
-        //     processingEnv.getMessager()
-        //         .printMessage(
-        //             reportFailureAs,
-        //             "The element "
-        //                 + element
-        //                 + " is part of the public APIs but is not marked as @PublicApi, @ExperimentalApi or @DeprecatedApi"
-        //                 + ((referencedBy != null) ? " (referenced by " + referencedBy + ") " : "")
-        //         );
-        // }
+            processingEnv.getMessager()
+                .printMessage(
+                    reportFailureAs,
+                    "The element "
+                        + element
+                        + " is part of the public APIs but is not marked as @PublicApi, @ExperimentalApi or @DeprecatedApi"
+                        + ((referencedBy != null) ? " (referenced by " + referencedBy + ") " : "")
+                );
+        }
     }
 
     /**

@@ -226,6 +226,8 @@ tasks.named('thirdPartyAudit').configure {
 
     'reactor.blockhound.BlockHound$Builder',
     'reactor.blockhound.integration.BlockHoundIntegration',
+
+    'com.google.protobuf.util.Timestamps'
   )
   ignoreViolations(
     // Guava internal classes

@@ -441,7 +441,6 @@ public class OpenSearchException extends RuntimeException implements Writeable, 
         }
     }
 
-
     protected static void headerToXContent(XContentBuilder builder, String key, List<String> values) throws IOException {
         if (values != null && values.isEmpty() == false) {
             if (values.size() == 1) {
@@ -603,7 +602,6 @@ public class OpenSearchException extends RuntimeException implements Writeable, 
             innerToXContent(builder, params, t, getExceptionName(t), t.getMessage(), emptyMap(), emptyMap(), t.getCause());
         }
     }
-
 
     /**
      * Render any exception as a xcontent, encapsulated within a field or object named "error". The level of details that are rendered

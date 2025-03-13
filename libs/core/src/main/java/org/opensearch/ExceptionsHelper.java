@@ -65,8 +65,6 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import io.grpc.Status;
-
 import static org.opensearch.OpenSearchException.getExceptionSimpleClassName;
 
 /**
@@ -112,21 +110,21 @@ public final class ExceptionsHelper {
     }
 
     // public static Status grpcStatus(Throwable t) {
-    //     if (t != null) {
-    //         // if (t instanceof OpenSearchException) {
-    //         // return ((OpenSearchException) t).status();
-    //         // } else
-    //         // if (t instanceof IllegalArgumentException) {
-    //         return Status.INVALID_ARGUMENT;
-    //     } else if (t instanceof JsonParseException) {
-    //         return Status.INVALID_ARGUMENT;
-    //     } else if (t instanceof OpenSearchRejectedExecutionException) {
-    //         return Status.RESOURCE_EXHAUSTED;
-    //     } else if (t instanceof NotXContentException) {
-    //         return Status.INVALID_ARGUMENT;
-    //     }
+    // if (t != null) {
+    // // if (t instanceof OpenSearchException) {
+    // // return ((OpenSearchException) t).status();
+    // // } else
+    // // if (t instanceof IllegalArgumentException) {
+    // return Status.INVALID_ARGUMENT;
+    // } else if (t instanceof JsonParseException) {
+    // return Status.INVALID_ARGUMENT;
+    // } else if (t instanceof OpenSearchRejectedExecutionException) {
+    // return Status.RESOURCE_EXHAUSTED;
+    // } else if (t instanceof NotXContentException) {
+    // return Status.INVALID_ARGUMENT;
+    // }
 
-    //     return Status.INTERNAL;
+    // return Status.INTERNAL;
     // }
 
     public static String summaryMessage(Throwable t) {

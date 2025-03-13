@@ -144,6 +144,10 @@ thirdPartyAudit {
     'com.google.appengine.api.urlfetch.HTTPResponse',
     'com.google.appengine.api.urlfetch.URLFetchService',
     'com.google.appengine.api.urlfetch.URLFetchServiceFactory',
+    'com.google.protobuf.util.JsonFormat',
+    'com.google.protobuf.util.JsonFormat$Parser',
+    'com.google.protobuf.util.JsonFormat$Printer',
+    'com.google.protobuf.util.Timestamps',
     // commons-logging optional dependencies
     'org.apache.avalon.framework.logger.Logger',
     'org.apache.log.Hierarchy',
