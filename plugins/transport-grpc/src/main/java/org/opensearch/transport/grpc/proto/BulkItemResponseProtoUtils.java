@@ -7,15 +7,14 @@
  */
 package org.opensearch.transport.grpc.proto;
 
-import org.opensearch.OpenSearchException;
-import org.opensearch.action.bulk.BulkItemResponse;
 import org.opensearch.action.DocWriteResponse;
+import org.opensearch.action.bulk.BulkItemResponse;
 import org.opensearch.action.update.UpdateResponse;
 import org.opensearch.index.get.GetResult;
 import org.opensearch.protobuf.ErrorCause;
 import org.opensearch.protobuf.Item;
-import org.opensearch.protobuf.ResponseItem;
 import org.opensearch.protobuf.NullValue;
+import org.opensearch.protobuf.ResponseItem;
 
 import java.io.IOException;
 

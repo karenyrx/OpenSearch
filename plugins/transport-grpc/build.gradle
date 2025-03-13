@@ -36,29 +36,6 @@ dependencies {
   implementation "io.grpc:grpc-stub:${versions.grpc}"
   implementation "io.grpc:grpc-util:${versions.grpc}"
   implementation "io.perfmark:perfmark-api:0.26.0"
-  implementation "org.opensearch.protobuf:opensearch-protobuf:${versions.opensearchprotobuf}"
-  // ? {
-    // exclude group: 'com.google.protobuf', module: 'protobuf-java'
-  // }
-}
-
-// Create a task to extract the Guava JAR files
-task extractGuava(type: Copy) {
-  from configurations.guava
-  into "${project.buildDir}/extracted-guava"
-}
-
-// Create a task to copy the Guava classes to the plugin's classes directory
-task copyGuavaClasses(type: Copy, dependsOn: extractGuava) {
-  duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-  from zipTree(configurations.guava.files.find { it.name.startsWith("guava-") })
-  from zipTree(configurations.guava.files.find { it.name.startsWith("failureaccess-") })
-  into "${project.buildDir}/classes/java/main"
-}
-
-// Make the compileJava task depend on the copyGuavaClasses task
-tasks.named("compileJava").configure {
-  dependsOn copyGuavaClasses
 }
 
 tasks.named("dependencyLicenses").configure {
@@ -122,6 +99,8 @@ thirdPartyAudit {
 
     'com.google.gson.stream.JsonReader',
     'com.google.gson.stream.JsonToken',
+    'com.google.protobuf.util.Durations',
+    'com.google.protobuf.util.Timestamps',
     'com.google.protobuf.nano.CodedOutputByteBufferNano',
     'com.google.protobuf.nano.MessageNano',
     'com.google.rpc.Status',

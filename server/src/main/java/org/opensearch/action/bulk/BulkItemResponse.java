@@ -55,7 +55,6 @@ import org.opensearch.core.xcontent.MediaTypeRegistry;
 import org.opensearch.core.xcontent.ToXContentFragment;
 import org.opensearch.core.xcontent.XContentBuilder;
 import org.opensearch.core.xcontent.XContentParser;
-import org.opensearch.index.get.GetResult;
 import org.opensearch.index.mapper.MapperService;
 import org.opensearch.index.seqno.SequenceNumbers;
 
@@ -86,11 +85,6 @@ public class BulkItemResponse implements Writeable, StatusToXContentObject {
     }
 
     @Override
-    public String toString() {
-        return Strings.toString(MediaTypeRegistry.JSON, this);
-    }
-
-    @Override
     public XContentBuilder toXContent(XContentBuilder builder, Params params) throws IOException {
         builder.startObject();
         builder.startObject(opType.getLowercase());
@@ -109,7 +103,6 @@ public class BulkItemResponse implements Writeable, StatusToXContentObject {
         builder.endObject();
         return builder;
     }
-
 
     /**
      * Reads a {@link BulkItemResponse} from a {@link XContentParser}.

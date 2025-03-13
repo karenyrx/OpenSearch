@@ -10,14 +10,14 @@ package org.opensearch.transport.grpc.services.document;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.opensearch.protobuf.BulkRequest;
+import org.opensearch.protobuf.BulkResponse;
+import org.opensearch.protobuf.services.DocumentServiceGrpc;
 import org.opensearch.transport.client.node.NodeClient;
 import org.opensearch.transport.grpc.common.ExceptionHandler;
 import org.opensearch.transport.grpc.services.BulkRequestHandler;
 
 import io.grpc.stub.StreamObserver;
-import org.opensearch.protobuf.BulkRequest;
-import org.opensearch.protobuf.BulkResponse;
-import org.opensearch.protobuf.services.DocumentServiceGrpc;
 
 /**
  * Implementation of the gRPC Document Service.

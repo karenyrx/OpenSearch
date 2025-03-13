@@ -7,13 +7,11 @@
  */
 package org.opensearch.transport.grpc.proto;
 
-import org.opensearch.OpenSearchException;
 import org.opensearch.ExceptionsHelper;
+import org.opensearch.OpenSearchException;
 import org.opensearch.protobuf.ErrorCause;
 
 import java.io.IOException;
-import java.util.Map;
-import java.util.List;
 
 /**
  * Utility class for converting Exception objects to Protocol Buffers.
@@ -101,36 +99,35 @@ public class ExceptionProtoUtils {
 
         // Add metadata if the throwable is an OpenSearchException
         // if (throwable instanceof OpenSearchException) {
-        //     OpenSearchException exception = (OpenSearchException) throwable;
+        // OpenSearchException exception = (OpenSearchException) throwable;
 
-        //     // Add index and shard information if available
-        //     if (exception.getIndex() != null) {
-        //         errorCauseBuilder.setIndex(exception.getIndex().getName());
-        //         if (exception.getShardId() != null) {
-        //             errorCauseBuilder.setShard(exception.getShardId().getId());
-        //         }
-        //     }
-
-        //     // Add resource type and ID if available
-        //     if (exception.getResourceType() != null) {
-        //         errorCauseBuilder.setResourceType(exception.getResourceType());
-        //         List<String> resourceIds = exception.getResourceId();
-        //         if (resourceIds != null && !resourceIds.isEmpty()) {
-        //             errorCauseBuilder.addAllResourceId(resourceIds);
-        //         }
-        //     }
+        // // Add index and shard information if available
+        // if (exception.getIndex() != null) {
+        // errorCauseBuilder.setIndex(exception.getIndex().getName());
+        // if (exception.getShardId() != null) {
+        // errorCauseBuilder.setShard(exception.getShardId().getId());
+        // }
         // }
 
+        // // Add resource type and ID if available
+        // if (exception.getResourceType() != null) {
+        // errorCauseBuilder.setResourceType(exception.getResourceType());
+        // List<String> resourceIds = exception.getResourceId();
+        // if (resourceIds != null && !resourceIds.isEmpty()) {
+        // errorCauseBuilder.addAllResourceId(resourceIds);
+        // }
+        // }
+        // }
 
         // TODO needed?
-//        if (throwable instanceof OpenSearchException) {
-//            OpenSearchException exception = (OpenSearchException) throwable;
-//            exception.metadataToXContent(builder, params);
-//        }
+        // if (throwable instanceof OpenSearchException) {
+        // OpenSearchException exception = (OpenSearchException) throwable;
+        // exception.metadataToXContent(builder, params);
+        // }
 
         // Add nested cause if available
         // todo how to pass params?
-        //  if (params.paramAsBoolean(REST_EXCEPTION_SKIP_CAUSE, REST_EXCEPTION_SKIP_CAUSE_DEFAULT) == false) {
+        // if (params.paramAsBoolean(REST_EXCEPTION_SKIP_CAUSE, REST_EXCEPTION_SKIP_CAUSE_DEFAULT) == false) {
 
         if (cause != null) {
             errorCauseBuilder.setCausedBy(generateThrowableProto(cause));
@@ -138,7 +135,7 @@ public class ExceptionProtoUtils {
 
         // Add stack trace
         // TODO how to pass params?
-        //if (params.paramAsBoolean(REST_EXCEPTION_SKIP_STACK_TRACE, REST_EXCEPTION_SKIP_STACK_TRACE_DEFAULT) == false) {
+        // if (params.paramAsBoolean(REST_EXCEPTION_SKIP_STACK_TRACE, REST_EXCEPTION_SKIP_STACK_TRACE_DEFAULT) == false) {
         errorCauseBuilder.setStackTrace(ExceptionsHelper.stackTrace(throwable));
 
         // Add suppressed exceptions

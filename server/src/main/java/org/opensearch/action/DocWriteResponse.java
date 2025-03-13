@@ -257,7 +257,6 @@ public abstract class DocWriteResponse extends ReplicationResponse implements Wr
         return getShardInfo().status();
     }
 
-
     /**
      * Return the relative URI for the location of the document suitable for use in the {@code Location} header. The use of relative URIs is
      * permitted as of HTTP/1.1 (cf. https://tools.ietf.org/html/rfc7231#section-7.1.2).

@@ -18,14 +18,6 @@ import org.opensearch.action.support.WriteRequest;
 import org.opensearch.action.update.UpdateRequest;
 import org.opensearch.core.xcontent.MediaTypeRegistry;
 import org.opensearch.index.VersionType;
-import org.opensearch.rest.RestRequest;
-import org.opensearch.rest.action.document.RestBulkAction;
-import org.opensearch.transport.grpc.proto.FetchSourceContextProtoUtils;
-import org.opensearch.transport.client.node.NodeClient;
-import org.opensearch.transport.grpc.proto.BulkResponseProtoUtils;
-
-import java.io.IOException;
-
 import org.opensearch.protobuf.BulkRequestBody;
 import org.opensearch.protobuf.CreateOperation;
 import org.opensearch.protobuf.DeleteOperation;
@@ -33,6 +25,13 @@ import org.opensearch.protobuf.IndexOperation;
 import org.opensearch.protobuf.Script;
 import org.opensearch.protobuf.UpdateOperation;
 import org.opensearch.protobuf.WaitForActiveShards;
+import org.opensearch.rest.RestRequest;
+import org.opensearch.rest.action.document.RestBulkAction;
+import org.opensearch.transport.client.node.NodeClient;
+import org.opensearch.transport.grpc.proto.BulkResponseProtoUtils;
+import org.opensearch.transport.grpc.proto.FetchSourceContextProtoUtils;
+
+import java.io.IOException;
 
 /**
  * Handler for bulk requests in gRPC.
@@ -68,9 +67,6 @@ public class BulkRequestHandler {  // todo extend some common BaseGrpcHandler
      *                     execution
      */
     public org.opensearch.action.bulk.BulkRequest prepareRequest(org.opensearch.protobuf.BulkRequest request) throws IOException {
-        // logger.info("=== bulkRequest = " + request.toString());
-        int payloadSize = request.toByteArray().length;
-        // logger.info("Bulk request payload size: {} bytes in GRPC", payloadSize);
 
         org.opensearch.action.bulk.BulkRequest bulkRequest = new org.opensearch.action.bulk.BulkRequest();
 
@@ -98,21 +94,11 @@ public class BulkRequestHandler {  // todo extend some common BaseGrpcHandler
             bulkRequest.routing(request.getRouting());
         }
 
-        // [optional] Period each action waits for the following operations: automatic index creation, dynamic mapping updates, waiting for
-        // active shards.
-        // pattern: ^([0-9\.]+)(?:d|h|m|s|ms|micros|nanos)$
-        // Defaults to 1m (one minute). This guarantees OpenSearch waits for at least the timeout before failing. The actual wait time could
-        // be longer, particularly when multiple waits occur.
-        // optional string timeout = 5;
         if (request.hasTimeout()) {
             // todo add validation for regex?
             bulkRequest.timeout(request.getTimeout());
         }
 
-        // [optional] The number of active shards that must be available before OpenSearch processes the request. Default is 1 (only the
-        // primary shard). Set to all or a positive integer. Values greater than 1 require replicas. For example, if you specify a value of
-        // 3, the index must have two replicas distributed across two additional nodes for the operation to succeed.
-        // optional WaitForActiveShards wait_for_active_shards = 10;
         if (request.hasWaitForActiveShards()) {
             if (request.getWaitForActiveShards()
                 .getWaitForActiveShardsCase() == WaitForActiveShards.WaitForActiveShardsCase.WAIT_FOR_ACTIVE_SHARD_OPTIONS) {
@@ -171,17 +157,6 @@ public class BulkRequestHandler {  // todo extend some common BaseGrpcHandler
         }
         return bulkRequest;
     }
-
-    // // temporary method
-    // public static byte[] toBytes(String object) {
-    // try {
-    // // logger.info("original object={}, in bytes={}", object, object.getBytes(StandardCharsets.UTF_8));
-    // return object.getBytes(StandardCharsets.UTF_8);
-    // } catch(Exception e) {
-    // logger.error("failed to convert {} to bytes", object);
-    // return new byte[0];
-    // }
-    // }
 
     private static IndexRequest buildCreateRequest(CreateOperation createOperation, byte[] document) {
         IndexRequest indexRequest = new IndexRequest();
@@ -318,8 +293,9 @@ public class BulkRequestHandler {  // todo extend some common BaseGrpcHandler
         }
 
         if (bulkRequestBody.hasSource()) {
-            org.opensearch.search.fetch.subphase.FetchSourceContext fetchSourceContext =
-                FetchSourceContextProtoUtils.fromProto(bulkRequestBody.getSource());
+            org.opensearch.search.fetch.subphase.FetchSourceContext fetchSourceContext = FetchSourceContextProtoUtils.fromProto(
+                bulkRequestBody.getSource()
+            );
             updateRequest.fetchSource(fetchSourceContext);
         }
 

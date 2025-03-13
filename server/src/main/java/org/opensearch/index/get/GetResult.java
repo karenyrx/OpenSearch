@@ -32,7 +32,6 @@
 
 package org.opensearch.index.get;
 
-import com.google.protobuf.ByteString;
 import org.opensearch.OpenSearchParseException;
 import org.opensearch.Version;
 import org.opensearch.common.annotation.PublicApi;
@@ -323,7 +322,6 @@ public class GetResult implements Writeable, Iterable<DocumentField>, ToXContent
         return builder;
     }
 
-
     @Override
     public XContentBuilder toXContent(XContentBuilder builder, Params params) throws IOException {
         builder.startObject();
@@ -340,7 +338,6 @@ public class GetResult implements Writeable, Iterable<DocumentField>, ToXContent
         builder.endObject();
         return builder;
     }
-
 
     public static GetResult fromXContentEmbedded(XContentParser parser) throws IOException {
         XContentParser.Token token = parser.nextToken();

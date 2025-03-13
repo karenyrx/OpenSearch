@@ -32,8 +32,6 @@
 
 package org.opensearch.action.bulk;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.opensearch.common.annotation.PublicApi;
 import org.opensearch.common.unit.TimeValue;
 import org.opensearch.common.xcontent.StatusToXContentObject;
@@ -65,7 +63,6 @@ import static org.opensearch.core.xcontent.XContentParserUtils.throwUnknownToken
  */
 @PublicApi(since = "1.0.0")
 public class BulkResponse extends ActionResponse implements Iterable<BulkItemResponse>, StatusToXContentObject {
-    protected static Logger logger = LogManager.getLogger(BulkResponse.class);
 
     private static final String ITEMS = "items";
     private static final String ERRORS = "errors";
@@ -193,8 +190,6 @@ public class BulkResponse extends ActionResponse implements Iterable<BulkItemRes
         builder.endObject();
         return builder;
     }
-
-    // Method moved to org.opensearch.transport.grpc.proto.BulkResponseProtoUtils
 
     public static BulkResponse fromXContent(XContentParser parser) throws IOException {
         XContentParser.Token token = parser.nextToken();

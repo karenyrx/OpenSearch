@@ -43,12 +43,12 @@ public class GetResultProtoUtils {
 
         // Set index name
         // if (getResult.getIndex() != null) {
-        //     builder.setIndex(getResult.getIndex());
+        // builder.setIndex(getResult.getIndex());
         // }
 
         // // Set document ID
         // if (getResult.getId() != null) {
-        //     builder.setId(getResult.getId());
+        // builder.setId(getResult.getId());
         // }
 
         if (getResult.isExists()) {
@@ -81,11 +81,11 @@ public class GetResultProtoUtils {
 
         // TODO: Add support for meta fields
         // for (DocumentField field : metaFields.values()) {
-        //     if (field.getName().equals(IgnoredFieldMapper.NAME)) {
-        //         builder.field(field.getName(), field.getValues());
-        //     } else {
-        //         builder.field(field.getName(), field.<Object>getValue());
-        //     }
+        // if (field.getName().equals(IgnoredFieldMapper.NAME)) {
+        // builder.field(field.getName(), field.getValues());
+        // } else {
+        // builder.field(field.getName(), field.<Object>getValue());
+        // }
         // }
 
         // Set existence status
@@ -98,9 +98,9 @@ public class GetResultProtoUtils {
 
         // TODO: Add support for document fields
         // if (!documentFields.isEmpty()) {
-        //     for (DocumentField field : documentFields.values()) {
-        //         field.toXContent(builder, params);
-        //     }
+        // for (DocumentField field : documentFields.values()) {
+        // field.toXContent(builder, params);
+        // }
         // }
 
         return builder;

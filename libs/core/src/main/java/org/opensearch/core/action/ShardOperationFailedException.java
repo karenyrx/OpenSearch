@@ -94,13 +94,6 @@ public abstract class ShardOperationFailedException implements Writeable, ToXCon
     }
 
     /**
-     * The GRPC status of the failure.
-     */
-    // public final Status grpcStatus() {
-    // return grpcStatus;
-    // }
-
-    /**
      * The cause of this failure
      */
     public final Throwable getCause() {

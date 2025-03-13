@@ -165,16 +165,6 @@ public class ReplicationResponse extends ActionResponse {
             return status;
         }
 
-        // public Status grpcStatus() {
-        //     Status grpcStatus = Status.OK;
-        //     for (Failure failure : failures) {
-        //         if (failure.primary() && (failure.grpcStatus().getCode().value() > grpcStatus.getCode().value())) {
-        //             grpcStatus = failure.grpcStatus();
-        //         }
-        //     }
-        //     return grpcStatus;
-        // }
-
         @Override
         public void writeTo(StreamOutput out) throws IOException {
             out.writeVInt(total);
