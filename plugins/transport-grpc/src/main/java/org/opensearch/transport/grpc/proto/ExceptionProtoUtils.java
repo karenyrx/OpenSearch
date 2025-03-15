@@ -28,13 +28,6 @@ public class ExceptionProtoUtils {
      * Converts an OpenSearchException to its Protocol Buffer representation.
      * This method is equivalent to the toXContent method in OpenSearchException.
      *
-     * The conversion includes:
-     * - Exception type and reason (message)
-     * - Metadata and headers if available
-     * - Nested cause if available
-     * - Stack trace
-     * - Suppressed exceptions
-     *
      * @param exception The OpenSearchException to convert
      * @return A Protocol Buffer ErrorCause representation
      * @throws IOException if there's an error during conversion
@@ -72,12 +65,6 @@ public class ExceptionProtoUtils {
     /**
      * Inner helper method for converting a Throwable to its Protocol Buffer representation.
      * This method is equivalent to the innerToXContent method in OpenSearchException.
-     *
-     * The conversion includes:
-     * - Exception type and reason (message)
-     * - Nested cause if available
-     * - Stack trace
-     * - Suppressed exceptions
      *
      * @param throwable The throwable to convert
      * @param type The exception type

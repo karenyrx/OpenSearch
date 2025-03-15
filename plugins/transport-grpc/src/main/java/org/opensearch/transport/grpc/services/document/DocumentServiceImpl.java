@@ -21,8 +21,6 @@ import io.grpc.stub.StreamObserver;
 
 /**
  * Implementation of the gRPC Document Service.
- * This class was moved from server/src/main/java/org/opensearch/grpc/services/document/DocumentServiceImpl.java
- * to the transport-grpc module.
  */
 public class DocumentServiceImpl extends DocumentServiceGrpc.DocumentServiceImplBase {
     private static final Logger logger = LogManager.getLogger(DocumentServiceImpl.class);

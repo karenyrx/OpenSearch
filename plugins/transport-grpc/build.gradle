@@ -169,8 +169,3 @@ thirdPartyAudit {
     'io.grpc.netty.shaded.io.netty.util.internal.shaded.org.jctools.util.UnsafeRefArrayAccess'
   )
 }
-
-// Add internalClusterTest task configuration
-internalClusterTest {
-  // Configure the internalClusterTest task
-}

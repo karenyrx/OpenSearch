@@ -11,27 +11,36 @@ package org.opensearch.transport.grpc.common;
 import java.util.NoSuchElementException;
 import java.util.concurrent.TimeoutException;
 
+import org.opensearch.core.concurrency.OpenSearchRejectedExecutionException;
+
 import io.grpc.Status;
 
 /**
  * Handler for converting Java exceptions to gRPC Status exceptions.
- * This class was moved from server/src/main/java/org/opensearch/grpc/common/ExceptionHandler.java
- * to the transport-grpc module.
  */
 public class ExceptionHandler {
 
-    // TODO consolidate this with ExceptionsHelper.grpcStatus()
-    public static Throwable annotateException(Throwable e) {
-        if (e instanceof IllegalArgumentException) {
-            return Status.INVALID_ARGUMENT.withDescription(e.getMessage()).withCause(e).asRuntimeException();
-        } else if (e instanceof NoSuchElementException) {
-            return Status.NOT_FOUND.withDescription(e.getMessage()).withCause(e).asRuntimeException();
-        } else if (e instanceof TimeoutException) {
-            return Status.DEADLINE_EXCEEDED.withDescription(e.getMessage()).withCause(e).asRuntimeException();
-        } else if (e instanceof UnsupportedOperationException) {
-            return Status.UNIMPLEMENTED.withDescription(e.getMessage()).withCause(e).asRuntimeException();
+    /**
+     * Maps specific Java exceptions to gRPC status codes.
+     * This method is similar to the status() method in ExceptionsHelper.java.
+     *
+     * @param t The exception to convert
+     * @return A gRPC Status exception
+     */
+    public static Throwable annotateException(Throwable t) {
+        // TODO add more exception to GRPC status code mappings
+        if (t instanceof IllegalArgumentException) {
+            return Status.INVALID_ARGUMENT.withDescription(t.getMessage()).withCause(t).asRuntimeException();
+        } else if (t instanceof NoSuchElementException) {
+            return Status.NOT_FOUND.withDescription(t.getMessage()).withCause(t).asRuntimeException();
+        } else if (t instanceof TimeoutException) {
+            return Status.DEADLINE_EXCEEDED.withDescription(t.getMessage()).withCause(t).asRuntimeException();
+        } else if (t instanceof OpenSearchRejectedExecutionException) {
+            return Status.RESOURCE_EXHAUSTED.withDescription(t.getMessage()).withCause(t).asRuntimeException();
+        } else if (t instanceof UnsupportedOperationException) {
+            return Status.UNIMPLEMENTED.withDescription(t.getMessage()).withCause(t).asRuntimeException();
         } else {
-            return Status.INTERNAL.withDescription(e.getMessage()).withCause(e).asRuntimeException();
+            return Status.INTERNAL.withDescription(t.getMessage()).withCause(t).asRuntimeException();
         }
     }
 }

@@ -28,12 +28,6 @@ public class BulkResponseProtoUtils {
      * Converts a BulkResponse to its Protocol Buffer representation.
      * This method is equivalent to the toXContent method in BulkResponse.
      *
-     * The conversion includes:
-     * - Time taken for the bulk operation (excluding ingest preprocessing)
-     * - Ingest preprocessing time (if available)
-     * - Whether any operations failed
-     * - Individual item responses for each operation in the bulk request
-     *
      * @param response The BulkResponse to convert
      * @return A Protocol Buffer BulkResponse representation
      * @throws IOException if there's an error during conversion

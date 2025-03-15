@@ -31,14 +31,7 @@ public class BulkItemResponseProtoUtils {
 
     /**
      * Converts a BulkItemResponse to its Protocol Buffer representation.
-     * This method is equivalent to the toProto method in BulkItemResponse.
-     *
-     * The conversion includes:
-     * - Operation type (index, create, update, delete)
-     * - Success or failure status
-     * - For successful operations: document information, version, result, etc.
-     * - For failed operations: failure details including index, id, status, and error cause
-     * - For update operations: the GetResult if available
+     * This method is equivalent to the toXContent method in BulkItemResponse.
      *
      * @param response The BulkItemResponse to convert
      * @return A Protocol Buffer Item representation
@@ -53,7 +46,7 @@ public class BulkItemResponseProtoUtils {
             DocWriteResponse docResponse = response.getResponse();
             responseItemBuilder = DocWriteResponseProtoUtils.toProto(docResponse);
 
-            // TODO set the GRPC status instead of HTTP Status (@karenyrx)
+            // TODO set the GRPC status instead of HTTP Status
             responseItemBuilder.setStatus(docResponse.status().getStatus());
         } else {
             BulkItemResponse.Failure failure = response.getFailure();
@@ -61,12 +54,12 @@ public class BulkItemResponseProtoUtils {
 
             responseItemBuilder.setIndex(failure.getIndex());
             if (response.getId().isEmpty()) {
-                // todo test if this is correct null case
+                // TODO test if this is correct null case
                 responseItemBuilder.setId(ResponseItem.Id.newBuilder().setNullValue(NullValue.NULL_VALUE_NULL).build());
             } else {
                 responseItemBuilder.setId(ResponseItem.Id.newBuilder().setString(response.getId()).build());
             }
-            // TODO set the GRPC status instead of HTTP Status (@karenyrx)
+            // TODO set the GRPC status instead of HTTP Status
             responseItemBuilder.setStatus(failure.getStatus().getStatus());
 
             ErrorCause errorCause = ExceptionProtoUtils.generateThrowableProto(failure.getCause());

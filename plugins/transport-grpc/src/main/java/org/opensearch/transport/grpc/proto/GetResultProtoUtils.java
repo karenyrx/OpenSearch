@@ -27,14 +27,6 @@ public class GetResultProtoUtils {
      * Converts a GetResult to its Protocol Buffer representation.
      * This method is equivalent to the toXContentEmbedded method in GetResult.java.
      *
-     * The conversion includes:
-     * - Basic document information (index, id)
-     * - Document existence status
-     * - Document version
-     * - Sequence number and primary term if available
-     * - Document source if available
-     * - Document fields if available
-     *
      * @param getResult The GetResult to convert
      * @return A Protocol Buffer InlineGetDictUserDefined representation
      */

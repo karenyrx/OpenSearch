@@ -35,8 +35,6 @@ import java.io.IOException;
 
 /**
  * Handler for bulk requests in gRPC.
- * This class was moved from server/src/main/java/org/opensearch/grpc/handlers/document/BulkRequestHandler.java
- * to the transport-grpc module.
  */
 public class BulkRequestHandler {  // todo extend some common BaseGrpcHandler
     protected static Logger logger = LogManager.getLogger(BulkRequestHandler.class);
@@ -63,8 +61,7 @@ public class BulkRequestHandler {  // todo extend some common BaseGrpcHandler
      *
      * @param request the request to execute
      * @return the action to execute
-     * @throws IOException if an I/O exception occurred parsing the request and preparing for
-     *                     execution
+     * @throws IOException if an I/O exception occurred parsing the request and preparing for execution
      */
     public org.opensearch.action.bulk.BulkRequest prepareRequest(org.opensearch.protobuf.BulkRequest request) throws IOException {
 
@@ -95,7 +92,7 @@ public class BulkRequestHandler {  // todo extend some common BaseGrpcHandler
         }
 
         if (request.hasTimeout()) {
-            // todo add validation for regex?
+            // TODO add validation for regex?
             bulkRequest.timeout(request.getTimeout());
         }
 
@@ -109,8 +106,7 @@ public class BulkRequestHandler {  // todo extend some common BaseGrpcHandler
                         bulkRequest.waitForActiveShards(ActiveShardCount.ALL);
                         break;
                     case WAIT_FOR_ACTIVE_SHARD_OPTIONS_INDEX_SETTING:
-                        throw new UnsupportedOperationException("WAIT_FOR_ACTIVE_SHARD_OPTIONS_INDEX_SETTING does not map to anything");  // todo
-                                                                                                                                          // what
+                        throw new UnsupportedOperationException("WAIT_FOR_ACTIVE_SHARD_OPTIONS_INDEX_SETTING does not map to anything");  // TODO what
                                                                                                                                           // does
                                                                                                                                           // this
                                                                                                                                           // correspond

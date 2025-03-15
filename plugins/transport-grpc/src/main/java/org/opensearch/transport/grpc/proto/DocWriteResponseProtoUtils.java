@@ -30,13 +30,6 @@ public class DocWriteResponseProtoUtils {
      * Converts a DocWriteResponse to its Protocol Buffer representation.
      * This method is equivalent to the innerToXContent method in DocWriteResponse.
      *
-     * The conversion includes:
-     * - Basic document information (index, id, version)
-     * - Operation result (created, updated, deleted, not_found, noop)
-     * - Forced refresh status
-     * - Shard information including failures
-     * - Sequence number and primary term if available
-     *
      * @param response The DocWriteResponse to convert
      * @return A ResponseItem.Builder with the DocWriteResponse data
      *

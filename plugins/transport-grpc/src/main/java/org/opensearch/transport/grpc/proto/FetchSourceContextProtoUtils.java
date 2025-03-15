@@ -31,11 +31,6 @@ public class FetchSourceContextProtoUtils {
      * Converts a SourceConfig Protocol Buffer to a FetchSourceContext object.
      * This method was moved from org.opensearch.search.fetch.subphase.FetchSourceContext.
      *
-     * The conversion includes:
-     * - Fetch source flag
-     * - Source includes
-     * - Source excludes
-     *
      * @param sourceConfig The SourceConfig Protocol Buffer to convert
      * @return A FetchSourceContext object
      */
