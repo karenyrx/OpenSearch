@@ -8,6 +8,8 @@ import org.gradle.api.attributes.java.TargetJvmEnvironment
  * compatible open source license.
  */
 
+apply plugin: 'opensearch.internal-cluster-test'
+
 opensearchplugin {
   description = 'gRPC based transport implementation'
   classname = 'org.opensearch.transport.grpc.GrpcPlugin'
@@ -166,4 +168,9 @@ thirdPartyAudit {
     'io.grpc.netty.shaded.io.netty.util.internal.shaded.org.jctools.util.UnsafeLongArrayAccess',
     'io.grpc.netty.shaded.io.netty.util.internal.shaded.org.jctools.util.UnsafeRefArrayAccess'
   )
+}
+
+// Add internalClusterTest task configuration
+internalClusterTest {
+  // Configure the internalClusterTest task
 }
