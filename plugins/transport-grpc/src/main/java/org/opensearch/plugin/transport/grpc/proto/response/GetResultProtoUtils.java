@@ -5,7 +5,7 @@
  * this file be licensed under the Apache-2.0 license or a
  * compatible open source license.
  */
-package org.opensearch.plugin.transport.grpc.proto;
+package org.opensearch.plugin.transport.grpc.proto.response;
 
 import com.google.protobuf.ByteString;
 import org.opensearch.index.get.GetResult;

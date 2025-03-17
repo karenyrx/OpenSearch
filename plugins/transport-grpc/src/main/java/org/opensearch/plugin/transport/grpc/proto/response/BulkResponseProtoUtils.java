@@ -5,11 +5,10 @@
  * this file be licensed under the Apache-2.0 license or a
  * compatible open source license.
  */
-package org.opensearch.plugin.transport.grpc.proto;
+package org.opensearch.plugin.transport.grpc.proto.response;
 
 import org.opensearch.action.bulk.BulkItemResponse;
 import org.opensearch.action.bulk.BulkResponse;
-import org.opensearch.plugin.transport.grpc.proto.response.BulkItemResponseProtoUtils;
 import org.opensearch.protobuf.BulkResponseBody;
 
 import java.io.IOException;
@@ -34,6 +33,8 @@ public class BulkResponseProtoUtils {
      * @throws IOException if there's an error during conversion
      */
     public static org.opensearch.protobuf.BulkResponse toProto(BulkResponse response) throws IOException {
+        System.out.println("=== grpc bulk response=" + response.toString());
+
         org.opensearch.protobuf.BulkResponse.Builder bulkResponse = org.opensearch.protobuf.BulkResponse.newBuilder();
 
         // Create the bulk response body

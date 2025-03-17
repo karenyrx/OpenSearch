@@ -27,7 +27,6 @@ import org.opensearch.rest.RestRequest;
 import org.opensearch.rest.action.document.RestBulkAction;
 import org.opensearch.transport.client.node.NodeClient;
 import org.opensearch.transport.client.Requests;
-import org.opensearch.plugin.transport.grpc.proto.BulkResponseProtoUtils;
 
 import java.io.IOException;
 import java.util.List;

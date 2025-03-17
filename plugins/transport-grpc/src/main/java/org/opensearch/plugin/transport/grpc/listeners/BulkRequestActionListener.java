@@ -14,7 +14,7 @@ import io.grpc.stub.StreamObserver;
 import org.opensearch.action.bulk.BulkResponse;
 import org.opensearch.core.action.ActionListener;
 import org.opensearch.plugin.transport.grpc.common.ExceptionHandler;
-import org.opensearch.plugin.transport.grpc.proto.BulkResponseProtoUtils;
+import org.opensearch.plugin.transport.grpc.proto.response.BulkResponseProtoUtils;
 
 
 /**

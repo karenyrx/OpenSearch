@@ -6,10 +6,9 @@
  * compatible open source license.
  */
 
-package org.opensearch.plugin.transport.grpc.proto;
+package org.opensearch.plugin.transport.grpc.proto.response;
 
 import org.opensearch.action.DocWriteRequest;
-import org.opensearch.action.DocWriteResponse;
 import org.opensearch.action.bulk.BulkItemResponse;
 import org.opensearch.action.bulk.BulkResponse;
 import org.opensearch.action.index.IndexResponse;

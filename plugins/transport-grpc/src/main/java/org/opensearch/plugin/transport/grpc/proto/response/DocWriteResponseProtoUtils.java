@@ -5,7 +5,7 @@
  * this file be licensed under the Apache-2.0 license or a
  * compatible open source license.
  */
-package org.opensearch.plugin.transport.grpc.proto;
+package org.opensearch.plugin.transport.grpc.proto.response;
 
 import org.opensearch.action.DocWriteResponse;
 import org.opensearch.action.support.replication.ReplicationResponse;
