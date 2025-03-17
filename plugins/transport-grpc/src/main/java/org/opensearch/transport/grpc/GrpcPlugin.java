@@ -7,15 +7,18 @@
  */
 package org.opensearch.transport.grpc;
 
+import io.grpc.BindableService;
 import org.opensearch.common.network.NetworkService;
 import org.opensearch.common.settings.ClusterSettings;
 import org.opensearch.common.settings.Setting;
 import org.opensearch.common.settings.Settings;
 import org.opensearch.core.indices.breaker.CircuitBreakerService;
+import org.opensearch.plugin.transport.grpc.services.document.DocumentServiceImpl;
 import org.opensearch.plugins.NetworkPlugin;
 import org.opensearch.plugins.Plugin;
 import org.opensearch.telemetry.tracing.Tracer;
 import org.opensearch.threadpool.ThreadPool;
+import org.opensearch.transport.client.node.NodeClient;
 
 import java.util.Collections;
 import java.util.List;
@@ -47,12 +50,20 @@ public final class GrpcPlugin extends Plugin implements NetworkPlugin {
         CircuitBreakerService circuitBreakerService,
         NetworkService networkService,
         ClusterSettings clusterSettings,
-        Tracer tracer
+        Tracer tracer,
+        NodeClient client
     ) {
+        List<BindableService> grpcServices = registerGRPCServices(
+            new DocumentServiceImpl(client)
+        );
         return Collections.singletonMap(
             GRPC_TRANSPORT_SETTING_KEY,
-            () -> new Netty4GrpcServerTransport(settings, Collections.emptyList(), networkService)
+            () -> new Netty4GrpcServerTransport(settings, grpcServices, networkService)
         );
+    }
+
+    protected List<BindableService> registerGRPCServices(BindableService... services) {
+        return List.of(services);
     }
 
     @Override

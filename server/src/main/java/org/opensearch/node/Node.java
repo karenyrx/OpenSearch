@@ -1171,6 +1171,7 @@ public class Node implements Closeable {
                 restController,
                 clusterService.getClusterSettings(),
                 tracer,
+                client,
                 transportInterceptors,
                 secureSettingsFactories
             );
