@@ -13,7 +13,7 @@ import org.opensearch.common.settings.ClusterSettings;
 import org.opensearch.common.settings.Setting;
 import org.opensearch.common.settings.Settings;
 import org.opensearch.core.indices.breaker.CircuitBreakerService;
-import org.opensearch.plugin.transport.grpc.services.document.DocumentServiceImpl;
+import org.opensearch.plugin.transport.grpc.services.DocumentServiceImpl;
 import org.opensearch.plugins.NetworkPlugin;
 import org.opensearch.plugins.Plugin;
 import org.opensearch.telemetry.tracing.Tracer;

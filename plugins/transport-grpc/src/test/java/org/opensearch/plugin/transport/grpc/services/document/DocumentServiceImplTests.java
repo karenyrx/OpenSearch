@@ -8,24 +8,19 @@
 
 package org.opensearch.plugin.transport.grpc.services.document;
 
-import org.opensearch.action.DocWriteRequest;
-import org.opensearch.action.bulk.BulkItemResponse;
-import org.opensearch.action.bulk.BulkResponse;
-import org.opensearch.action.index.IndexResponse;
+import org.opensearch.plugin.transport.grpc.services.DocumentServiceImpl;
 import org.opensearch.protobuf.BulkRequest;
 import org.opensearch.protobuf.BulkRequestBody;
-import org.opensearch.protobuf.BulkResponse.Builder;
 import org.opensearch.protobuf.IndexOperation;
 import org.opensearch.test.OpenSearchTestCase;
 import org.opensearch.transport.client.node.NodeClient;
-import org.opensearch.plugin.transport.grpc.services.BulkRequestHandler;
+import org.opensearch.plugin.transport.grpc.proto.request.BulkRequestProtoUtils;
 import org.junit.Before;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import com.google.protobuf.ByteString;
 
-import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
 
@@ -47,7 +42,7 @@ public class DocumentServiceImplTests extends OpenSearchTestCase {
     private NodeClient client;
 
     @Mock
-    private BulkRequestHandler bulkRequestHandler;
+    private BulkRequestProtoUtils bulkRequestProtoUtils;
 
     @Mock
     private StreamObserver<org.opensearch.protobuf.BulkResponse> responseObserver;
@@ -56,7 +51,7 @@ public class DocumentServiceImplTests extends OpenSearchTestCase {
     public void setup() throws IOException {
         MockitoAnnotations.openMocks(this);
         service = new DocumentServiceImpl(client);
-        service.bulkRequestHandler = bulkRequestHandler;
+        service.bulkRequestProtoUtils = bulkRequestProtoUtils;
     }
 
     public void testBulkSuccess() throws IOException {
@@ -74,7 +69,7 @@ public class DocumentServiceImplTests extends OpenSearchTestCase {
             .build();
 
         // Mock the handler to return the test response
-        when(bulkRequestHandler.executeRequest(request)).thenReturn(response);
+        when(bulkRequestProtoUtils.executeRequest(request)).thenReturn(response);
 
         // Call the bulk method
         service.bulk(request, responseObserver);
@@ -90,7 +85,7 @@ public class DocumentServiceImplTests extends OpenSearchTestCase {
 
         // Mock the handler to throw an exception
         IOException exception = new IOException("Test exception");
-        when(bulkRequestHandler.executeRequest(request)).thenThrow(exception);
+        when(bulkRequestProtoUtils.executeRequest(request)).thenThrow(exception);
 
         // Call the bulk method
         service.bulk(request, responseObserver);

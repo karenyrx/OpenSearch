@@ -92,15 +92,6 @@ configure(allprojects - project(':distribution:archives:integ-test-zip')) {
   }
 }
 
-// TODO what is the right way to use maven local repo?
-// [temp] Add mavenLocal() repository to all projects
-allprojects {
-  repositories {
-    mavenLocal()
-    mavenCentral()
-  }
-}
-
 subprojects {
   // Default to the apache license
   project.ext.licenseName = 'The Apache Software License, Version 2.0'

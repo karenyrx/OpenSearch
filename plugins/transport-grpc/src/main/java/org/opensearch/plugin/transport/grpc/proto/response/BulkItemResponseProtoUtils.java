@@ -5,12 +5,15 @@
  * this file be licensed under the Apache-2.0 license or a
  * compatible open source license.
  */
-package org.opensearch.plugin.transport.grpc.proto;
+package org.opensearch.plugin.transport.grpc.proto.response;
 
 import org.opensearch.action.DocWriteResponse;
 import org.opensearch.action.bulk.BulkItemResponse;
 import org.opensearch.action.update.UpdateResponse;
 import org.opensearch.index.get.GetResult;
+import org.opensearch.plugin.transport.grpc.proto.DocWriteResponseProtoUtils;
+import org.opensearch.plugin.transport.grpc.proto.ExceptionProtoUtils;
+import org.opensearch.plugin.transport.grpc.proto.GetResultProtoUtils;
 import org.opensearch.protobuf.ErrorCause;
 import org.opensearch.protobuf.Item;
 import org.opensearch.protobuf.NullValue;

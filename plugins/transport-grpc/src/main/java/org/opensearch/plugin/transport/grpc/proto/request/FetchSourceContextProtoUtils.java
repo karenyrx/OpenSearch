@@ -6,9 +6,8 @@
  * compatible open source license.
  */
 
-package org.opensearch.plugin.transport.grpc.proto;
+package org.opensearch.plugin.transport.grpc.proto.request;
 
-import org.opensearch.common.Booleans;
 import org.opensearch.core.common.Strings;
 import org.opensearch.protobuf.SourceConfig;
 import org.opensearch.protobuf.SourceConfigParam;

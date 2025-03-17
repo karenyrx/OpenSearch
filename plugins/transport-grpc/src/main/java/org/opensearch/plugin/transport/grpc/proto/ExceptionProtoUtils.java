@@ -13,6 +13,8 @@ import org.opensearch.protobuf.ErrorCause;
 
 import java.io.IOException;
 
+import static org.opensearch.OpenSearchException.getExceptionName;
+
 /**
  * Utility class for converting Exception objects to Protocol Buffers.
  * This class handles the conversion of OpenSearchException and other Throwable instances
@@ -134,69 +136,5 @@ public class ExceptionProtoUtils {
         }
 
         return errorCauseBuilder.build();
-    }
-
-    /**
-     * Returns an underscore case name for the given exception. This method strips {@code OpenSearch} prefixes from exception names.
-     * This method is equivalent to the getExceptionName method in OpenSearchException.
-     *
-     * TODO: do we really need to make the exception name in underscore casing?
-     */
-    private static String getExceptionName(Throwable ex) {
-        String simpleName = getExceptionSimpleClassName(ex);
-        if (simpleName.startsWith("OpenSearch")) {
-            simpleName = simpleName.substring("OpenSearch".length());
-        }
-        return toUnderscoreCase(simpleName);
-    }
-
-    /**
-     * Returns the simple class name of the exception.
-     * This method is equivalent to the getExceptionSimpleClassName method in OpenSearchException.
-     */
-    private static String getExceptionSimpleClassName(final Throwable ex) {
-        String simpleName = ex.getClass().getSimpleName();
-        if (simpleName.isEmpty()) {
-            simpleName = "OpenSearchException";
-        }
-        return simpleName;
-    }
-
-    /**
-     * Converts a camel case string to underscore case.
-     * This method is equivalent to the toUnderscoreCase method in OpenSearchException.
-     */
-    private static String toUnderscoreCase(String value) {
-        StringBuilder sb = new StringBuilder();
-        boolean changed = false;
-        for (int i = 0; i < value.length(); i++) {
-            char c = value.charAt(i);
-            if (Character.isUpperCase(c)) {
-                if (!changed) {
-                    // copy it over here
-                    for (int j = 0; j < i; j++) {
-                        sb.append(value.charAt(j));
-                    }
-                    changed = true;
-                    if (i == 0) {
-                        sb.append(Character.toLowerCase(c));
-                    } else {
-                        sb.append('_');
-                        sb.append(Character.toLowerCase(c));
-                    }
-                } else {
-                    sb.append('_');
-                    sb.append(Character.toLowerCase(c));
-                }
-            } else {
-                if (changed) {
-                    sb.append(c);
-                }
-            }
-        }
-        if (!changed) {
-            return value;
-        }
-        return sb.toString();
     }
 }

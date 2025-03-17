@@ -9,6 +9,7 @@ package org.opensearch.plugin.transport.grpc.proto;
 
 import org.opensearch.action.bulk.BulkItemResponse;
 import org.opensearch.action.bulk.BulkResponse;
+import org.opensearch.plugin.transport.grpc.proto.response.BulkItemResponseProtoUtils;
 import org.opensearch.protobuf.BulkResponseBody;
 
 import java.io.IOException;

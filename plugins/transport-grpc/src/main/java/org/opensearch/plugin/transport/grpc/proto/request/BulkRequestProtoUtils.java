@@ -6,7 +6,7 @@
  * compatible open source license.
  */
 
-package org.opensearch.plugin.transport.grpc.services;
+package org.opensearch.plugin.transport.grpc.proto.request;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -28,7 +28,6 @@ import org.opensearch.rest.action.document.RestBulkAction;
 import org.opensearch.transport.client.node.NodeClient;
 import org.opensearch.transport.client.Requests;
 import org.opensearch.plugin.transport.grpc.proto.BulkResponseProtoUtils;
-import org.opensearch.plugin.transport.grpc.proto.FetchSourceContextProtoUtils;
 
 import java.io.IOException;
 import java.util.List;
@@ -38,23 +37,10 @@ import static org.opensearch.index.seqno.SequenceNumbers.UNASSIGNED_PRIMARY_TERM
 /**
  * Handler for bulk requests in gRPC.
  */
-public class BulkRequestHandler {  // todo extend some common BaseGrpcHandler
-    protected static Logger logger = LogManager.getLogger(BulkRequestHandler.class);
+public class BulkRequestProtoUtils {  // todo extend some common BaseGrpcHandler
+    protected static Logger logger = LogManager.getLogger(BulkRequestProtoUtils.class);
 
-    private final NodeClient client;
 //    private final Settings settings;
-
-    /**
-     *
-     * @param client: Client for executing actions on the local node
-     */
-    public BulkRequestHandler(NodeClient client) {
-        this.client = client;
-    }
-
-    public org.opensearch.protobuf.BulkResponse executeRequest(org.opensearch.protobuf.BulkRequest request) throws IOException {
-        return BulkResponseProtoUtils.toProto(client.bulk(prepareRequest(request)).actionGet());
-    }
 
     /**
      * Prepare the request for execution.
@@ -66,7 +52,7 @@ public class BulkRequestHandler {  // todo extend some common BaseGrpcHandler
      * @return a future of the bulk action that was     executed
      * @throws IOException if an I/O exception occurred parsing the request and preparing for execution
      */
-    protected org.opensearch.action.bulk.BulkRequest prepareRequest(BulkRequest request) throws IOException {
+    public static org.opensearch.action.bulk.BulkRequest prepareRequest(BulkRequest request) throws IOException {
         org.opensearch.action.bulk.BulkRequest bulkRequest = Requests.bulkRequest();
 
         // String defaultIndex = request.hasIndex() ? request.getIndex() : null;
@@ -87,7 +73,7 @@ public class BulkRequestHandler {  // todo extend some common BaseGrpcHandler
 
         bulkRequest.setRefreshPolicy(getRefreshPolicy(request));
 
-        // Note: add batch_size parameter when backporting to OS 2.x
+        // Note: Add batch_size parameter when backporting to OS 2.x
         /*
         if (request.hasBatchSize()){
             logger.info("The batch size option in bulk API is deprecated and will be removed in 3.0.");
@@ -100,7 +86,6 @@ public class BulkRequestHandler {  // todo extend some common BaseGrpcHandler
         return bulkRequest;
     }
 
-    // TODO double check this
     private static String getRefreshPolicy(org.opensearch.protobuf.BulkRequest request) {
         if (!request.hasRefresh()){
             return null;

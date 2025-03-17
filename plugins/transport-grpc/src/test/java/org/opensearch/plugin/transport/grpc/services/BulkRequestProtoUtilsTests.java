@@ -16,6 +16,7 @@ import org.opensearch.action.support.WriteRequest;
 import org.opensearch.core.action.ActionListener;
 import org.opensearch.core.index.Index;
 import org.opensearch.core.index.shard.ShardId;
+import org.opensearch.plugin.transport.grpc.proto.request.BulkRequestProtoUtils;
 import org.opensearch.protobuf.BulkRequest;
 import org.opensearch.protobuf.BulkRequestBody;
 import org.opensearch.protobuf.CreateOperation;
@@ -36,9 +37,9 @@ import java.io.IOException;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 
-public class BulkRequestHandlerTests extends OpenSearchTestCase {
+public class BulkRequestProtoUtilsTests extends OpenSearchTestCase {
 
-    private BulkRequestHandler handler;
+    private BulkRequestProtoUtils handler;
 
     @Mock
     private NodeClient client;
@@ -46,7 +47,7 @@ public class BulkRequestHandlerTests extends OpenSearchTestCase {
     @Before
     public void setup() {
         MockitoAnnotations.openMocks(this);
-        handler = new BulkRequestHandler(client);
+        handler = new BulkRequestProtoUtils(client);
     }
 
     public void testPrepareRequestWithIndexOperation() throws IOException {
