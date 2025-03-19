@@ -105,8 +105,7 @@ public interface NetworkPlugin {
         CircuitBreakerService circuitBreakerService,
         NetworkService networkService,
         ClusterSettings clusterSettings,
-        Tracer tracer,
-        NodeClient client
+        Tracer tracer
     ) {
         return Collections.emptyMap();
     }

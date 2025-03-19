@@ -67,7 +67,6 @@ import org.opensearch.transport.Transport;
 import org.opensearch.transport.TransportInterceptor;
 import org.opensearch.transport.TransportRequest;
 import org.opensearch.transport.TransportRequestHandler;
-import org.opensearch.transport.client.node.NodeClient;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -124,7 +123,6 @@ public final class NetworkModule {
     );
 
     private final Settings settings;
-    private final NodeClient client;
 
     private static final List<NamedWriteableRegistry.Entry> namedWriteables = new ArrayList<>();
     private static final List<NamedXContentRegistry.Entry> namedXContents = new ArrayList<>();
@@ -183,12 +181,10 @@ public final class NetworkModule {
         HttpServerTransport.Dispatcher dispatcher,
         ClusterSettings clusterSettings,
         Tracer tracer,
-        NodeClient client,
         List<TransportInterceptor> transportInterceptors,
         Collection<SecureSettingsFactory> secureSettingsFactories
     ) {
         this.settings = settings;
-        this.client = client;
 
         final Collection<SecureTransportSettingsProvider> secureTransportSettingsProviders = secureSettingsFactories.stream()
             .map(p -> p.getSecureTransportSettingsProvider(settings))
@@ -237,8 +233,7 @@ public final class NetworkModule {
                 circuitBreakerService,
                 networkService,
                 clusterSettings,
-                tracer,
-                client
+                tracer
             );
             for (Map.Entry<String, Supplier<NetworkPlugin.AuxTransport>> entry : auxTransportFactory.entrySet()) {
                 registerAuxTransport(entry.getKey(), entry.getValue());
