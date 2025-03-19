@@ -9,6 +9,9 @@ package org.opensearch.plugin.transport.grpc.proto.response;
 
 import org.opensearch.ExceptionsHelper;
 import org.opensearch.OpenSearchException;
+import org.opensearch.action.bulk.BulkItemResponse;
+import org.opensearch.core.xcontent.ToXContent;
+import org.opensearch.core.xcontent.XContentBuilder;
 import org.opensearch.protobuf.ErrorCause;
 
 import java.io.IOException;
@@ -28,7 +31,7 @@ public class ExceptionProtoUtils {
 
     /**
      * Converts an OpenSearchException to its Protocol Buffer representation.
-     * This method is equivalent to the toXContent method in OpenSearchException.
+     * This method is equivalent to the {@link OpenSearchException#toXContent(XContentBuilder, ToXContent.Params)}
      *
      * @param exception The OpenSearchException to convert
      * @return A Protocol Buffer ErrorCause representation

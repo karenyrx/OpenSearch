@@ -9,9 +9,12 @@
 package org.opensearch.plugin.transport.grpc.proto.request;
 
 import org.opensearch.core.common.Strings;
+import org.opensearch.core.xcontent.XContentParser;
 import org.opensearch.protobuf.SourceConfig;
 import org.opensearch.protobuf.SourceConfigParam;
 import org.opensearch.protobuf.SourceFilter;
+import org.opensearch.rest.RestRequest;
+import org.opensearch.script.Script;
 import org.opensearch.search.fetch.subphase.FetchSourceContext;
 
 import java.util.ArrayList;
@@ -30,7 +33,8 @@ public class FetchSourceContextProtoUtils {
 
     /**
      * Converts a SourceConfig Protocol Buffer to a FetchSourceContext object.
-     * Similar to FetchSourceContext.parseFromRestRequest()
+     * Similar to {@link FetchSourceContext#parseFromRestRequest(RestRequest)}
+     *
      * @param request
      * @return
      */
@@ -68,7 +72,7 @@ public class FetchSourceContextProtoUtils {
 
     /**
      * Converts a SourceConfig Protocol Buffer to a FetchSourceContext object.
-     * Similar to FetchSourceContext.fromXContent().
+     * Similar to {@link FetchSourceContext#fromXContent(XContentParser)}.
      *
      * @param sourceConfig The SourceConfig Protocol Buffer to convert
      * @return A FetchSourceContext object

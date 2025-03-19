@@ -8,25 +8,20 @@
 package org.opensearch.plugin.transport.grpc.proto.response;
 
 import org.opensearch.action.DocWriteResponse;
-import org.opensearch.action.bulk.BulkItemResponse;
 import org.opensearch.action.support.replication.ReplicationResponse;
 import org.opensearch.core.xcontent.ToXContent;
 import org.opensearch.core.xcontent.XContentBuilder;
 import org.opensearch.core.xcontent.XContentParser;
-import org.opensearch.protobuf.ErrorCause;
-import org.opensearch.protobuf.NullValue;
-import org.opensearch.protobuf.ResponseItem;
-import org.opensearch.protobuf.ShardFailure;
-import org.opensearch.protobuf.ShardStatistics;
+import org.opensearch.protobuf.*;
 
 /**
  * Utility class for converting DocWriteResponse objects to Protocol Buffers.
  * This class handles the conversion of document write operation responses (index, create, update, delete)
  * to their Protocol Buffer representation.
  */
-public class DocWriteResponseProtoUtils {
+public class ShardInfoProtoUtils {
 
-    private DocWriteResponseProtoUtils() {
+    private ShardInfoProtoUtils() {
         // Utility class, no instances
     }
 
@@ -62,7 +57,7 @@ public class DocWriteResponseProtoUtils {
             responseItem.setForcedRefresh(true);
         }
         // Handle shard information
-        ShardStatistics shardStatistics = ShardInfoProtoUtils.convertShardInfoProto(response.getShardInfo());
+        ShardStatistics shardStatistics = convertShardInfoProto(response.getShardInfo());
         responseItem.setShards(shardStatistics);
 
         // Set sequence number and primary term if available
@@ -72,5 +67,30 @@ public class DocWriteResponseProtoUtils {
         }
 
         return responseItem;
+    }
+
+    /**
+     * Converts a ShardInfo Java object to a protobuf ShardStatistics.
+     * Similar to {@link ReplicationResponse.ShardInfo#fromXContent(XContentParser) }
+     */
+    private static ShardStatistics convertShardInfoProto(ReplicationResponse.ShardInfo shardInfo){
+        ShardStatistics.Builder shardStatistics = ShardStatistics.newBuilder();
+        shardStatistics.setFailed(shardInfo.getFailed());
+        shardStatistics.setSuccessful(shardInfo.getSuccessful());
+        shardStatistics.setTotal(shardInfo.getTotal());
+        // TODO: find the corresponding field for 'skipped'
+        // shardStatistics.setSkipped();
+        // Add any shard failures
+        for (ReplicationResponse.ShardInfo.Failure failure : shardInfo.getFailures()) {
+            ShardFailure.Builder shardFailure = ShardFailure.newBuilder();
+            shardFailure.setIndex(failure.index());
+            shardFailure.setNode(failure.nodeId());
+            // TODO: set error
+            shardFailure.setReason(ErrorCause.newBuilder().build());
+            shardFailure.setShard(failure.shardId());
+            shardFailure.setStatus(failure.status().name());
+            shardStatistics.addFailures(shardFailure);
+        }
+        return shardStatistics.build();
     }
 }

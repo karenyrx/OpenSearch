@@ -19,6 +19,7 @@ import org.opensearch.action.support.WriteRequest;
 import org.opensearch.action.update.UpdateRequest;
 import org.opensearch.common.lucene.uid.Versions;
 import org.opensearch.core.xcontent.MediaTypeRegistry;
+import org.opensearch.core.xcontent.XContentParser;
 import org.opensearch.index.VersionType;
 import org.opensearch.index.seqno.SequenceNumbers;
 import org.opensearch.protobuf.*;
@@ -37,14 +38,16 @@ import static org.opensearch.index.seqno.SequenceNumbers.UNASSIGNED_PRIMARY_TERM
 /**
  * Handler for bulk requests in gRPC.
  */
-public class BulkRequestProtoUtils {  // todo extend some common BaseGrpcHandler
+public class BulkRequestProtoUtils {
     protected static Logger logger = LogManager.getLogger(BulkRequestProtoUtils.class);
-
 //    private final Settings settings;
+
+    private BulkRequestProtoUtils() {
+        // Utility class, no instances
+    }
 
     /**
      * Prepare the request for execution.
-     * <p>
      * Similar to {@link RestBulkAction#prepareRequest(RestRequest, NodeClient)} ()}
      * Please ensure to keep both implementations consistent.
      *
@@ -316,10 +319,11 @@ public class BulkRequestProtoUtils {  // todo extend some common BaseGrpcHandler
         return updateRequest;
     }
 
-    /** Similar to UpdateRequest#fromXContent(); **/
+    /**
+     * Similar to {@link UpdateRequest#fromXContent(XContentParser)}
+     */
     private static UpdateRequest fromProto(UpdateRequest updateRequest, byte[] document, BulkRequestBody bulkRequestBody, UpdateOperation updateOperation) {
         // TODO compare with REST
-
         if (bulkRequestBody.hasScript()) {
             Script script = ScriptProtoUtils.parseFromProtoRequest(bulkRequestBody.getScript());
             updateRequest.script(script);
@@ -361,7 +365,6 @@ public class BulkRequestProtoUtils {  // todo extend some common BaseGrpcHandler
 
         return updateRequest;
     }
-
 
     private static DeleteRequest buildDeleteRequest(DeleteOperation deleteOperation, String index, String id, String routing, long version, VersionType versionType, long ifSeqNo, long ifPrimaryTerm) {
         index = deleteOperation.hasIndex() ? deleteOperation.getIndex() : index;

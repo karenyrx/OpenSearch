@@ -9,6 +9,8 @@ package org.opensearch.plugin.transport.grpc.proto.response;
 
 import org.opensearch.action.bulk.BulkItemResponse;
 import org.opensearch.action.bulk.BulkResponse;
+import org.opensearch.core.xcontent.ToXContent;
+import org.opensearch.core.xcontent.XContentBuilder;
 import org.opensearch.protobuf.BulkResponseBody;
 
 import java.io.IOException;
@@ -26,14 +28,14 @@ public class BulkResponseProtoUtils {
 
     /**
      * Converts a BulkResponse to its Protocol Buffer representation.
-     * This method is equivalent to the toXContent method in BulkResponse.
+     * This method is equivalent to {@link BulkResponse#toXContent(XContentBuilder, ToXContent.Params)}
      *
      * @param response The BulkResponse to convert
      * @return A Protocol Buffer BulkResponse representation
      * @throws IOException if there's an error during conversion
      */
     public static org.opensearch.protobuf.BulkResponse toProto(BulkResponse response) throws IOException {
-        System.out.println("=== grpc bulk response=" + response.toString());
+//        System.out.println("=== grpc bulk response=" + response.toString());
 
         org.opensearch.protobuf.BulkResponse.Builder bulkResponse = org.opensearch.protobuf.BulkResponse.newBuilder();
 

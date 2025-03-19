@@ -9,7 +9,10 @@ package org.opensearch.plugin.transport.grpc.proto.response;
 
 import org.opensearch.action.DocWriteResponse;
 import org.opensearch.action.bulk.BulkItemResponse;
+import org.opensearch.action.bulk.BulkResponse;
 import org.opensearch.action.update.UpdateResponse;
+import org.opensearch.core.xcontent.ToXContent;
+import org.opensearch.core.xcontent.XContentBuilder;
 import org.opensearch.index.get.GetResult;
 import org.opensearch.protobuf.ErrorCause;
 import org.opensearch.protobuf.Item;
@@ -31,7 +34,8 @@ public class BulkItemResponseProtoUtils {
 
     /**
      * Converts a BulkItemResponse to its Protocol Buffer representation.
-     * This method is equivalent to the toXContent method in BulkItemResponse.
+     * This method is equivalent to the {@link BulkItemResponse#toXContent(XContentBuilder, ToXContent.Params)}
+     *
      *
      * @param response The BulkItemResponse to convert
      * @return A Protocol Buffer Item representation
@@ -54,7 +58,6 @@ public class BulkItemResponseProtoUtils {
 
             responseItemBuilder.setIndex(failure.getIndex());
             if (response.getId().isEmpty()) {
-                // TODO test if this is correct null case
                 responseItemBuilder.setId(ResponseItem.Id.newBuilder().setNullValue(NullValue.NULL_VALUE_NULL).build());
             } else {
                 responseItemBuilder.setId(ResponseItem.Id.newBuilder().setString(response.getId()).build());

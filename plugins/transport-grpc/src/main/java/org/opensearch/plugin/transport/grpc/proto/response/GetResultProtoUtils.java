@@ -8,6 +8,9 @@
 package org.opensearch.plugin.transport.grpc.proto.response;
 
 import com.google.protobuf.ByteString;
+import org.opensearch.OpenSearchException;
+import org.opensearch.core.xcontent.ToXContent;
+import org.opensearch.core.xcontent.XContentBuilder;
 import org.opensearch.index.get.GetResult;
 import org.opensearch.index.seqno.SequenceNumbers;
 import org.opensearch.protobuf.InlineGetDictUserDefined;
@@ -25,7 +28,7 @@ public class GetResultProtoUtils {
 
     /**
      * Converts a GetResult to its Protocol Buffer representation.
-     * This method is equivalent to the toXContentEmbedded method in GetResult.java.
+     * This method is equivalent to the  {@link GetResult#toXContentEmbedded(XContentBuilder, ToXContent.Params)}
      *
      * @param getResult The GetResult to convert
      * @return A Protocol Buffer InlineGetDictUserDefined representation
