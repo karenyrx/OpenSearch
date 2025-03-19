@@ -22,6 +22,7 @@ import org.opensearch.core.xcontent.MediaTypeRegistry;
 import org.opensearch.index.VersionType;
 import org.opensearch.index.seqno.SequenceNumbers;
 import org.opensearch.protobuf.*;
+import org.opensearch.script.Script;
 import org.opensearch.search.fetch.subphase.FetchSourceContext;
 import org.opensearch.rest.RestRequest;
 import org.opensearch.rest.action.document.RestBulkAction;
@@ -229,11 +230,6 @@ public class BulkRequestProtoUtils {  // todo extend some common BaseGrpcHandler
             .source(document, MediaTypeRegistry.JSON)
             .setRequireAlias(requireAlias);
         return indexRequest;
-
-        // todo set dynamic_templates?
-        // for (Map<String, String> dynamic_template_entry : indexOperation.getDynamicTemplatesMap()) {
-        //
-        // }
     }
 
     private static IndexRequest buildIndexRequest(IndexOperation indexOperation, byte[] document, IndexOperation.OpType opType, String index, String id, String routing, long version, VersionType versionType, String pipeline, long ifSeqNo, long ifPrimaryTerm, boolean requireAlias) {
@@ -306,7 +302,7 @@ public class BulkRequestProtoUtils {  // todo extend some common BaseGrpcHandler
             .setRequireAlias(requireAlias)
             .routing(routing);
 
-        updateRequest = fromProto(updateRequest, document, bulkRequestBody);
+        updateRequest = fromProto(updateRequest, document, bulkRequestBody, updateOperation);
 
         if (fetchSourceContext != null) {
             updateRequest.fetchSource(fetchSourceContext);
@@ -321,18 +317,12 @@ public class BulkRequestProtoUtils {  // todo extend some common BaseGrpcHandler
     }
 
     /** Similar to UpdateRequest#fromXContent(); **/
-    private static UpdateRequest fromProto(UpdateRequest updateRequest, byte[] document, BulkRequestBody bulkRequestBody) {
+    private static UpdateRequest fromProto(UpdateRequest updateRequest, byte[] document, BulkRequestBody bulkRequestBody, UpdateOperation updateOperation) {
         // TODO compare with REST
 
         if (bulkRequestBody.hasScript()) {
-            Script protoScript = bulkRequestBody.getScript();
-            if (bulkRequestBody.getScript().hasInlineScript()) {
-                // todo support InlineScript
-            } else {
-                // todo pass params too
-                org.opensearch.script.Script script = new org.opensearch.script.Script(protoScript.getStoredScriptId().getId());
-                updateRequest.script(script);
-            }
+            Script script = ScriptProtoUtils.parseFromProtoRequest(bulkRequestBody.getScript());
+            updateRequest.script(script);
         }
 
         if (bulkRequestBody.hasScriptedUpsert()) {
@@ -350,12 +340,24 @@ public class BulkRequestProtoUtils {  // todo extend some common BaseGrpcHandler
         }
 
         if (bulkRequestBody.hasDetectNoop()) {
-            updateRequest.detectNoop(bulkRequestBody.getDocAsUpsert());
+            updateRequest.detectNoop(bulkRequestBody.getDetectNoop());
         }
 
-        // source field
-        // if seqNo
-        // if PrimaryTerm
+        if (bulkRequestBody.hasDocAsUpsert()) {
+            updateRequest.docAsUpsert(bulkRequestBody.getDocAsUpsert());
+        }
+
+        if (bulkRequestBody.hasSource()) {
+            updateRequest.fetchSource(FetchSourceContextProtoUtils.fromProto(bulkRequestBody.getSource()));
+        }
+
+        if (updateOperation.hasIfSeqNo()) {
+            updateRequest.setIfSeqNo(updateOperation.getIfSeqNo());
+        }
+
+        if (updateOperation.hasIfPrimaryTerm()) {
+            updateRequest.setIfPrimaryTerm(updateOperation.getIfPrimaryTerm());
+        }
 
         return updateRequest;
     }
