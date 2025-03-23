@@ -36,11 +36,9 @@ import org.opensearch.common.annotation.PublicApi;
 import org.opensearch.common.unit.TimeValue;
 import org.opensearch.common.xcontent.StatusToXContentObject;
 import org.opensearch.core.action.ActionResponse;
-import org.opensearch.core.common.Strings;
 import org.opensearch.core.common.io.stream.StreamInput;
 import org.opensearch.core.common.io.stream.StreamOutput;
 import org.opensearch.core.rest.RestStatus;
-import org.opensearch.core.xcontent.MediaTypeRegistry;
 import org.opensearch.core.xcontent.XContentBuilder;
 import org.opensearch.core.xcontent.XContentParser;
 
@@ -162,11 +160,6 @@ public class BulkResponse extends ActionResponse implements Iterable<BulkItemRes
         out.writeArray(responses);
         out.writeVLong(tookInMillis);
         out.writeZLong(ingestTookInMillis);
-    }
-
-    @Override
-    public String toString() {
-        return Strings.toString(MediaTypeRegistry.JSON, this);
     }
 
     @Override

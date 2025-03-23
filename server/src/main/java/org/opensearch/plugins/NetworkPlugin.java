@@ -49,7 +49,6 @@ import org.opensearch.telemetry.tracing.Tracer;
 import org.opensearch.threadpool.ThreadPool;
 import org.opensearch.transport.Transport;
 import org.opensearch.transport.TransportInterceptor;
-import org.opensearch.transport.client.node.NodeClient;
 
 import java.util.Collections;
 import java.util.List;
