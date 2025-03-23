@@ -27,7 +27,6 @@ import org.opensearch.script.ScriptService;
 import org.opensearch.telemetry.tracing.Tracer;
 import org.opensearch.threadpool.ThreadPool;
 import org.opensearch.transport.client.Client;
-import org.opensearch.transport.client.node.NodeClient;
 import org.opensearch.watcher.ResourceWatcherService;
 
 import java.util.Collection;
@@ -49,7 +48,7 @@ import static org.opensearch.plugin.transport.grpc.Netty4GrpcServerTransport.SET
  */
 public final class GrpcPlugin extends Plugin implements NetworkPlugin {
 
-    private NodeClient client;
+    private Client client;
     /**
      * Creates a new GrpcPlugin instance.
      */
@@ -106,7 +105,7 @@ public final class GrpcPlugin extends Plugin implements NetworkPlugin {
         IndexNameExpressionResolver indexNameExpressionResolver,
         Supplier<RepositoriesService> repositoriesServiceSupplier
     ) {
-        this.client = (NodeClient) client;
+        this.client = client;
 
         return super.createComponents(client, clusterService, threadPool, resourceWatcherService, scriptService, xContentRegistry, environment, nodeEnvironment, namedWriteableRegistry, indexNameExpressionResolver, repositoriesServiceSupplier);
     }
