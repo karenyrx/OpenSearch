@@ -5,19 +5,21 @@
  * this file be licensed under the Apache-2.0 license or a
  * compatible open source license.
  */
-package org.opensearch.plugin.transport.grpc.proto.response;
+package org.opensearch.plugin.transport.grpc.proto.response.document.bulk;
 
 import org.opensearch.action.DocWriteResponse;
 import org.opensearch.action.bulk.BulkItemResponse;
-import org.opensearch.action.bulk.BulkResponse;
 import org.opensearch.action.update.UpdateResponse;
 import org.opensearch.core.xcontent.ToXContent;
 import org.opensearch.core.xcontent.XContentBuilder;
 import org.opensearch.index.get.GetResult;
-import org.opensearch.protobuf.ErrorCause;
-import org.opensearch.protobuf.Item;
-import org.opensearch.protobuf.NullValue;
-import org.opensearch.protobuf.ResponseItem;
+import org.opensearch.plugin.transport.grpc.proto.response.document.common.DocWriteResponseProtoUtils;
+import org.opensearch.plugin.transport.grpc.proto.response.common.ExceptionProtoUtils;
+import org.opensearch.plugin.transport.grpc.proto.response.document.get.GetResultProtoUtils;
+import org.opensearch.protobufs.ErrorCause;
+import org.opensearch.protobufs.Item;
+import org.opensearch.protobufs.NullValue;
+import org.opensearch.protobufs.ResponseItem;
 
 import java.io.IOException;
 
@@ -81,11 +83,11 @@ public class BulkItemResponseProtoUtils {
                 itemBuilder.setIndex(responseItem);
                 break;
             case UPDATE:
-                UpdateResponse updateResponse = (UpdateResponse) response.getResponse();
+                UpdateResponse updateResponse = response.getResponse();
                 if (updateResponse != null) {
                     GetResult getResult = updateResponse.getGetResult();
                     if (getResult != null) {
-                        responseItemBuilder.setGet(GetResultProtoUtils.toProto(getResult));
+                        responseItemBuilder = GetResultProtoUtils.toProto(getResult, responseItemBuilder);
                     }
                 }
                 responseItem = responseItemBuilder.build();

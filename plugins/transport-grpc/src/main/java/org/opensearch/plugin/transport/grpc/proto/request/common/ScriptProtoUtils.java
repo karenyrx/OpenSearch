@@ -6,23 +6,12 @@
  * compatible open source license.
  */
 
-package org.opensearch.plugin.transport.grpc.proto.request;
+package org.opensearch.plugin.transport.grpc.proto.request.common;
 
-import org.opensearch.core.common.Strings;
 import org.opensearch.core.xcontent.XContentParser;
-import org.opensearch.protobuf.InlineScript;
-import org.opensearch.protobuf.StoredScriptId;
-import org.opensearch.protobuf.SourceConfig;
-import org.opensearch.protobuf.SourceConfigParam;
-import org.opensearch.protobuf.SourceFilter;
+import org.opensearch.protobufs.InlineScript;
+import org.opensearch.protobufs.StoredScriptId;
 import org.opensearch.script.Script;
-import org.opensearch.script.ScriptType;
-import org.opensearch.search.fetch.subphase.FetchSourceContext;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
 
 import static org.opensearch.script.Script.DEFAULT_SCRIPT_LANG;
 
@@ -41,7 +30,7 @@ public class ScriptProtoUtils {
      * Converts a Script Protocol Buffer to a Script object.
      * Similar to {@link Script#parse(XContentParser)}
      */
-    public static Script parseFromProtoRequest(org.opensearch.protobuf.Script script) {
+    public static Script parseFromProtoRequest(org.opensearch.protobufs.Script script) {
         return parseFromProtoRequest(script, DEFAULT_SCRIPT_LANG);
     }
 
@@ -49,7 +38,7 @@ public class ScriptProtoUtils {
      * Converts a Script Protocol Buffer to a Script object.
      * Similar to {@link Script#parse(XContentParser, String)}
      */
-    private static Script parseFromProtoRequest(org.opensearch.protobuf.Script script, String defaultLang){
+    private static Script parseFromProtoRequest(org.opensearch.protobufs.Script script, String defaultLang){
         // TODO: support script param
         throw new UnsupportedOperationException("Script param is not supported yet");
     }

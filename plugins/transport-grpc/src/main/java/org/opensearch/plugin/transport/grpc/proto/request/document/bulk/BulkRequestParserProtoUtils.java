@@ -6,11 +6,12 @@
  * compatible open source license.
  */
 
-package org.opensearch.plugin.transport.grpc.proto.request;
+package org.opensearch.plugin.transport.grpc.proto.request.document.bulk;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.opensearch.action.DocWriteRequest;
+import org.opensearch.action.bulk.BulkRequestParser;
 import org.opensearch.action.bulk.BulkShardRequest;
 import org.opensearch.action.delete.DeleteRequest;
 import org.opensearch.action.index.IndexRequest;
@@ -18,128 +19,53 @@ import org.opensearch.action.support.ActiveShardCount;
 import org.opensearch.action.support.WriteRequest;
 import org.opensearch.action.update.UpdateRequest;
 import org.opensearch.common.lucene.uid.Versions;
+import org.opensearch.core.common.bytes.BytesReference;
+import org.opensearch.core.xcontent.MediaType;
 import org.opensearch.core.xcontent.MediaTypeRegistry;
 import org.opensearch.core.xcontent.XContentParser;
 import org.opensearch.index.VersionType;
 import org.opensearch.index.seqno.SequenceNumbers;
-import org.opensearch.protobuf.*;
-import org.opensearch.script.Script;
-import org.opensearch.search.fetch.subphase.FetchSourceContext;
+import org.opensearch.plugin.transport.grpc.proto.request.common.FetchSourceContextProtoUtils;
+import org.opensearch.plugin.transport.grpc.proto.request.common.ScriptProtoUtils;
+import org.opensearch.protobufs.*;
 import org.opensearch.rest.RestRequest;
 import org.opensearch.rest.action.document.RestBulkAction;
-import org.opensearch.transport.client.node.NodeClient;
+import org.opensearch.script.Script;
+import org.opensearch.search.fetch.subphase.FetchSourceContext;
 import org.opensearch.transport.client.Requests;
+import org.opensearch.transport.client.node.NodeClient;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.function.Consumer;
 
 import static org.opensearch.index.seqno.SequenceNumbers.UNASSIGNED_PRIMARY_TERM;
 
 /**
- * Handler for bulk requests in gRPC.
+ * Parses bulk requests.
+ * Similar to {@link BulkRequestParser#parse(BytesReference, String, String, FetchSourceContext, String, Boolean, boolean, MediaType, Consumer, Consumer, Consumer)}.
+ *
  */
-public class BulkRequestProtoUtils {
-    protected static Logger logger = LogManager.getLogger(BulkRequestProtoUtils.class);
-//    private final Settings settings;
+public class BulkRequestParserProtoUtils {
+    protected static Logger logger = LogManager.getLogger(BulkRequestParserProtoUtils.class);
+//    protected final Settings settings;
 
-    private BulkRequestProtoUtils() {
+    protected BulkRequestParserProtoUtils() {
         // Utility class, no instances
     }
 
     /**
-     * Prepare the request for execution.
-     * Similar to {@link RestBulkAction#prepareRequest(RestRequest, NodeClient)} ()}
-     * Please ensure to keep both implementations consistent.
-     *
-     * @param request the request to execute
-     * @return a future of the bulk action that was     executed
-     * @throws IOException if an I/O exception occurred parsing the request and preparing for execution
-     */
-    public static org.opensearch.action.bulk.BulkRequest prepareRequest(BulkRequest request) throws IOException {
-        org.opensearch.action.bulk.BulkRequest bulkRequest = Requests.bulkRequest();
-
-        // String defaultIndex = request.hasIndex() ? request.getIndex() : null;
-        String defaultIndex = null;
-        String defaultRouting = request.hasRouting() ? request.getRouting() : null;
-        FetchSourceContext defaultFetchSourceContext = FetchSourceContextProtoUtils.parseFromProtoRequest(request);
-        String defaultPipeline = request.hasPipeline() ? request.getPipeline() : null;
-
-        bulkRequest = getActiveShardCount(bulkRequest, request);
-
-        Boolean defaultRequireAlias = request.hasRequireAlias() ? request.getRequireAlias() : null;
-
-        if (request.hasTimeout()){
-            bulkRequest.timeout(request.getTimeout());
-        } else {
-            bulkRequest.timeout(BulkShardRequest.DEFAULT_TIMEOUT);
-        };
-
-        bulkRequest.setRefreshPolicy(getRefreshPolicy(request));
-
-        // Note: Add batch_size parameter when backporting to OS 2.x
-        /*
-        if (request.hasBatchSize()){
-            logger.info("The batch size option in bulk API is deprecated and will be removed in 3.0.");
-        }
-        bulkRequest.batchSize(request.hasBatchSize() ? request.getBatchSize() : Integer.MAX_VALUE);
-        */
-
-        bulkRequest.add(getDocWriteRequests(request, defaultIndex, defaultRouting, defaultFetchSourceContext, defaultPipeline, defaultRequireAlias));
-
-        return bulkRequest;
-    }
-
-    private static String getRefreshPolicy(org.opensearch.protobuf.BulkRequest request) {
-        if (!request.hasRefresh()){
-            return null;
-        }
-        switch (request.getRefresh()) {
-            case REFRESH_TRUE:
-                return WriteRequest.RefreshPolicy.IMMEDIATE.getValue();
-            case REFRESH_WAIT_FOR:
-                return WriteRequest.RefreshPolicy.WAIT_UNTIL.getValue();
-            case REFRESH_FALSE:
-            case REFRESH_UNSPECIFIED:
-            default:
-                return WriteRequest.RefreshPolicy.NONE.getValue();
-        }
-    }
-
-    private static org.opensearch.action.bulk.BulkRequest getActiveShardCount(org.opensearch.action.bulk.BulkRequest bulkRequest, BulkRequest request){
-        if(!request.hasWaitForActiveShards()){
-            return bulkRequest;
-        }
-        WaitForActiveShards waitForActiveShards = request.getWaitForActiveShards();
-        switch (waitForActiveShards.getWaitForActiveShardsCase()){
-            case WaitForActiveShards.WaitForActiveShardsCase.WAIT_FOR_ACTIVE_SHARD_OPTIONS:
-                switch (waitForActiveShards.getWaitForActiveShardOptions()) {
-                    case WAIT_FOR_ACTIVE_SHARD_OPTIONS_UNSPECIFIED:
-                        throw new UnsupportedOperationException("No mapping for WAIT_FOR_ACTIVE_SHARD_OPTIONS_UNSPECIFIED");
-                    case WAIT_FOR_ACTIVE_SHARD_OPTIONS_ALL:
-                       bulkRequest.waitForActiveShards(ActiveShardCount.ALL);
-                       break;
-                    default:
-                        bulkRequest.waitForActiveShards(ActiveShardCount.DEFAULT);
-                        break;
-                }
-                break;
-            case WaitForActiveShards.WaitForActiveShardsCase.INT32_VALUE:
-                bulkRequest.waitForActiveShards(waitForActiveShards.getInt32Value());
-                break;
-            default:
-                throw new UnsupportedOperationException("No mapping for WAIT_FOR_ACTIVE_SHARD_OPTIONS_UNSPECIFIED");
-        }
-        return bulkRequest;
-    }
-
-    /**
-     * Similar to  BulkRequestParser#parse(), except that it takes into account global values.
-     * Please ensure implementation is consistent.
+     * Similar to {@link BulkRequestParser#parse(BytesReference, String, String, FetchSourceContext, String, Boolean, boolean, MediaType, Consumer, Consumer, Consumer)}, except that it takes into account global values.
      *
      * @param request
+     * @param defaultIndex
+     * @param defaultRouting
+     * @param defaultFetchSourceContext
+     * @param defaultPipeline
+     * @param defaultRequireAlias
      * @return
      */
-    private static DocWriteRequest<?>[] getDocWriteRequests (org.opensearch.protobuf.BulkRequest request, String defaultIndex, String defaultRouting, FetchSourceContext defaultFetchSourceContext, String defaultPipeline, Boolean defaultRequireAlias) {
+    protected static DocWriteRequest<?>[] getDocWriteRequests (BulkRequest request, String defaultIndex, String defaultRouting, FetchSourceContext defaultFetchSourceContext, String defaultPipeline, Boolean defaultRequireAlias) {
         List<BulkRequestBody> bulkRequestBodyList = request.getRequestBodyList();
         DocWriteRequest<?>[] docWriteRequests = new DocWriteRequest<?>[bulkRequestBodyList.size()];
 
@@ -166,40 +92,40 @@ public class BulkRequestProtoUtils {
 //            Boolean requireAlias = getRequireAlias(defaultRequireAlias);
 
             // Parse the operation type: create, index, update, delete, or none provided (which is invalid).
-           switch (bulkRequestBodyEntry.getOperationContainerCase()) {
-               case CREATE:
-                   docWriteRequest = buildCreateRequest(
-                       bulkRequestBodyEntry.getCreate(), bulkRequestBodyEntry.getDoc().toByteArray(),
-                       index, id, routing, version, versionType, pipeline, ifSeqNo, ifPrimaryTerm, requireAlias);
-                   break;
-               case INDEX:
-                   docWriteRequest = buildIndexRequest(
-                       bulkRequestBodyEntry.getIndex(), bulkRequestBodyEntry.getDoc().toByteArray(),
-                       opType, index, id, routing, version, versionType, pipeline, ifSeqNo, ifPrimaryTerm, requireAlias);
-                   break;
-               case UPDATE:
-                   docWriteRequest = buildUpdateRequest(
-                       bulkRequestBodyEntry.getUpdate(),
-                       bulkRequestBodyEntry.getDoc().toByteArray(),
-                       bulkRequestBodyEntry,
-                       index, id, routing, fetchSourceContext, retryOnConflict, pipeline, ifSeqNo, ifPrimaryTerm, requireAlias);
-                   break;
-               case DELETE:
-                   docWriteRequest = buildDeleteRequest(bulkRequestBodyEntry.getDelete(),
-                       index, id, routing, version, versionType,ifSeqNo, ifPrimaryTerm);
-                   break;
-               case OPERATIONCONTAINER_NOT_SET:
-               default:
-                   throw new IllegalArgumentException(
-                   "Invalid BulkRequestBody. An OperationContainer (create, index, update, or delete) must be provided.");
-           }
+            switch (bulkRequestBodyEntry.getOperationContainerCase()) {
+                case CREATE:
+                    docWriteRequest = buildCreateRequest(
+                        bulkRequestBodyEntry.getCreate(), bulkRequestBodyEntry.getDoc().toByteArray(),
+                        index, id, routing, version, versionType, pipeline, ifSeqNo, ifPrimaryTerm, requireAlias);
+                    break;
+                case INDEX:
+                    docWriteRequest = buildIndexRequest(
+                        bulkRequestBodyEntry.getIndex(), bulkRequestBodyEntry.getDoc().toByteArray(),
+                        opType, index, id, routing, version, versionType, pipeline, ifSeqNo, ifPrimaryTerm, requireAlias);
+                    break;
+                case UPDATE:
+                    docWriteRequest = buildUpdateRequest(
+                        bulkRequestBodyEntry.getUpdate(),
+                        bulkRequestBodyEntry.getDoc().toByteArray(),
+                        bulkRequestBodyEntry,
+                        index, id, routing, fetchSourceContext, retryOnConflict, pipeline, ifSeqNo, ifPrimaryTerm, requireAlias);
+                    break;
+                case DELETE:
+                    docWriteRequest = buildDeleteRequest(bulkRequestBodyEntry.getDelete(),
+                        index, id, routing, version, versionType,ifSeqNo, ifPrimaryTerm);
+                    break;
+                case OPERATIONCONTAINER_NOT_SET:
+                default:
+                    throw new IllegalArgumentException(
+                        "Invalid BulkRequestBody. An OperationContainer (create, index, update, or delete) must be provided.");
+            }
             // Add the request to the bulk request
             docWriteRequests[i] = docWriteRequest;
         }
         return docWriteRequests;
     }
 
-    private static IndexRequest buildCreateRequest(CreateOperation createOperation, byte[] document, String index, String id, String routing, long version, VersionType versionType, String pipeline, long ifSeqNo, long ifPrimaryTerm, boolean requireAlias) {
+    protected static IndexRequest buildCreateRequest(CreateOperation createOperation, byte[] document, String index, String id, String routing, long version, VersionType versionType, String pipeline, long ifSeqNo, long ifPrimaryTerm, boolean requireAlias) {
         index = createOperation.hasIndex() ? createOperation.getIndex() : index;
         id = createOperation.hasId() ? createOperation.getId() : id;
         routing = createOperation.hasRouting() ? createOperation.getRouting() : routing;
@@ -235,7 +161,7 @@ public class BulkRequestProtoUtils {
         return indexRequest;
     }
 
-    private static IndexRequest buildIndexRequest(IndexOperation indexOperation, byte[] document, IndexOperation.OpType opType, String index, String id, String routing, long version, VersionType versionType, String pipeline, long ifSeqNo, long ifPrimaryTerm, boolean requireAlias) {
+    protected static IndexRequest buildIndexRequest(IndexOperation indexOperation, byte[] document, IndexOperation.OpType opType, String index, String id, String routing, long version, VersionType versionType, String pipeline, long ifSeqNo, long ifPrimaryTerm, boolean requireAlias) {
         opType = indexOperation.hasOpType()? indexOperation.getOpType() : opType;
         index = indexOperation.hasIndex() ? indexOperation.getIndex() : index;
         id = indexOperation.hasId() ? indexOperation.getId() : id;
@@ -285,12 +211,12 @@ public class BulkRequestProtoUtils {
         return indexRequest;
     }
 
-    private static UpdateRequest buildUpdateRequest(UpdateOperation updateOperation, byte[] document, BulkRequestBody bulkRequestBody, String index, String id, String routing, FetchSourceContext fetchSourceContext, int retryOnConflict, String pipeline, long ifSeqNo, long ifPrimaryTerm, boolean requireAlias) {
+    protected static UpdateRequest buildUpdateRequest(UpdateOperation updateOperation, byte[] document, BulkRequestBody bulkRequestBody, String index, String id, String routing, FetchSourceContext fetchSourceContext, int retryOnConflict, String pipeline, long ifSeqNo, long ifPrimaryTerm, boolean requireAlias) {
         index = updateOperation.hasIndex() ? updateOperation.getIndex() : index;
         id = updateOperation.hasId() ? updateOperation.getId() : id;
         routing = updateOperation.hasRouting() ? updateOperation.getRouting() : routing;
         fetchSourceContext = bulkRequestBody.hasSource() ? FetchSourceContextProtoUtils.fromProto(
-                bulkRequestBody.getSource()) : fetchSourceContext;
+            bulkRequestBody.getSource()) : fetchSourceContext;
         retryOnConflict = updateOperation.hasRetryOnConflict() ? updateOperation.getRetryOnConflict() : retryOnConflict;
         ifSeqNo = updateOperation.hasIfSeqNo() ? updateOperation.getIfSeqNo() : ifSeqNo;
         ifPrimaryTerm = updateOperation.hasIfPrimaryTerm() ? updateOperation.getIfPrimaryTerm() : ifPrimaryTerm;
@@ -322,7 +248,7 @@ public class BulkRequestProtoUtils {
     /**
      * Similar to {@link UpdateRequest#fromXContent(XContentParser)}
      */
-    private static UpdateRequest fromProto(UpdateRequest updateRequest, byte[] document, BulkRequestBody bulkRequestBody, UpdateOperation updateOperation) {
+    protected static UpdateRequest fromProto(UpdateRequest updateRequest, byte[] document, BulkRequestBody bulkRequestBody, UpdateOperation updateOperation) {
         // TODO compare with REST
         if (bulkRequestBody.hasScript()) {
             Script script = ScriptProtoUtils.parseFromProtoRequest(bulkRequestBody.getScript());
@@ -366,7 +292,7 @@ public class BulkRequestProtoUtils {
         return updateRequest;
     }
 
-    private static DeleteRequest buildDeleteRequest(DeleteOperation deleteOperation, String index, String id, String routing, long version, VersionType versionType, long ifSeqNo, long ifPrimaryTerm) {
+    protected static DeleteRequest buildDeleteRequest(DeleteOperation deleteOperation, String index, String id, String routing, long version, VersionType versionType, long ifSeqNo, long ifPrimaryTerm) {
         index = deleteOperation.hasIndex() ? deleteOperation.getIndex() : index;
         id = deleteOperation.hasId() ? deleteOperation.getId() : id;
         routing = deleteOperation.hasRouting() ? deleteOperation.getRouting() : routing;

@@ -5,16 +5,17 @@
  * this file be licensed under the Apache-2.0 license or a
  * compatible open source license.
  */
-package org.opensearch.plugin.transport.grpc.proto.response;
+package org.opensearch.plugin.transport.grpc.proto.response.common;
 
+import com.google.protobuf.Struct;
 import org.opensearch.ExceptionsHelper;
 import org.opensearch.OpenSearchException;
-import org.opensearch.action.bulk.BulkItemResponse;
 import org.opensearch.core.xcontent.ToXContent;
 import org.opensearch.core.xcontent.XContentBuilder;
-import org.opensearch.protobuf.ErrorCause;
+import org.opensearch.protobufs.ErrorCause;
 
 import java.io.IOException;
+import java.util.Map;
 
 import static org.opensearch.OpenSearchException.getExceptionName;
 
@@ -51,7 +52,7 @@ public class ExceptionProtoUtils {
      * as Protocol Buffers.
      * <p>
      * This method is usually used when the {@link Throwable} is rendered as a part of another Protocol Buffer object.
-     * It is equivalent to the generateThrowableXContent method in OpenSearchException.
+     * It is equivalent to the {@link OpenSearchException#generateThrowableXContent(XContentBuilder, ToXContent.Params, Throwable)}
      *
      * @param t The throwable to convert
      * @return A Protocol Buffer ErrorCause representation
@@ -69,7 +70,7 @@ public class ExceptionProtoUtils {
 
     /**
      * Inner helper method for converting a Throwable to its Protocol Buffer representation.
-     * This method is equivalent to the innerToXContent method in OpenSearchException.
+     * This method is equivalent to the {@link OpenSearchException#innerToXContent(XContentBuilder, ToXContent.Params, Throwable, String, String, Map, Map, Throwable)}.
      *
      * @param throwable The throwable to convert
      * @param type The exception type
@@ -89,45 +90,36 @@ public class ExceptionProtoUtils {
             errorCauseBuilder.setReason(message);
         }
 
+        // TODO missing metadata for ErrorCause
+        /*
+        for (Map.Entry<String, List<String>> entry : metadata.entrySet()) {
+            headerToXContent(builder, entry.getKey().substring(OPENSEARCH_PREFIX_KEY.length()), entry.getValue());
+        }
+        */
+
         // Add metadata if the throwable is an OpenSearchException
-        // if (throwable instanceof OpenSearchException) {
-        // OpenSearchException exception = (OpenSearchException) throwable;
+         if (throwable instanceof OpenSearchException) {
+             OpenSearchException exception = (OpenSearchException) throwable;
+            //  errorCauseBuilder.setMetadata(metadataToProto(exception));
+         }
 
-        // // Add index and shard information if available
-        // if (exception.getIndex() != null) {
-        // errorCauseBuilder.setIndex(exception.getIndex().getName());
-        // if (exception.getShardId() != null) {
-        // errorCauseBuilder.setShard(exception.getShardId().getId());
-        // }
-        // }
+         if (cause != null) {
+             errorCauseBuilder.setCausedBy(generateThrowableProto(cause));
+         }
 
-        // // Add resource type and ID if available
-        // if (exception.getResourceType() != null) {
-        // errorCauseBuilder.setResourceType(exception.getResourceType());
-        // List<String> resourceIds = exception.getResourceId();
-        // if (resourceIds != null && !resourceIds.isEmpty()) {
-        // errorCauseBuilder.addAllResourceId(resourceIds);
-        // }
-        // }
-        // }
-
-        // TODO needed?
-        // if (throwable instanceof OpenSearchException) {
-        // OpenSearchException exception = (OpenSearchException) throwable;
-        // exception.metadataToXContent(builder, params);
-        // }
-
-        // Add nested cause if available
-        // todo how to pass params?
-        // if (params.paramAsBoolean(REST_EXCEPTION_SKIP_CAUSE, REST_EXCEPTION_SKIP_CAUSE_DEFAULT) == false) {
-
-        if (cause != null) {
-            errorCauseBuilder.setCausedBy(generateThrowableProto(cause));
+         // TODO how to set headers?
+        /*
+        if (headers.isEmpty() == false) {
+            builder.startObject(HEADER);
+            for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
+                headerToXContent(builder, entry.getKey(), entry.getValue());
+            }
+            builder.endObject();
         }
 
+        */
+
         // Add stack trace
-        // TODO how to pass params?
-        // if (params.paramAsBoolean(REST_EXCEPTION_SKIP_STACK_TRACE, REST_EXCEPTION_SKIP_STACK_TRACE_DEFAULT) == false) {
         errorCauseBuilder.setStackTrace(ExceptionsHelper.stackTrace(throwable));
 
         // Add suppressed exceptions
@@ -139,5 +131,17 @@ public class ExceptionProtoUtils {
         }
 
         return errorCauseBuilder.build();
+    }
+
+    /**
+     * This method is similar to {@link OpenSearchException#metadataToXContent(XContentBuilder, ToXContent.Params)}
+     * This method is override by various exception classes, such as {@link org.opensearch.core.common.breaker.CircuitBreakingException#metadataToXContent(XContentBuilder, ToXContent.Params)} or {@link org.opensearch.action.search.SearchPhaseExecutionException#metadataToXContent(XContentBuilder, ToXContent.Params)}
+     * @param exception
+     * @return
+     */
+    private static Struct metadataToProto(OpenSearchException exception) {
+        Struct.Builder additionalDetailsBuilder = Struct.newBuilder();
+        // TODO how do we populate additional details without adding an @Override method in exceptions under /server folder?
+        return additionalDetailsBuilder.build();
     }
 }

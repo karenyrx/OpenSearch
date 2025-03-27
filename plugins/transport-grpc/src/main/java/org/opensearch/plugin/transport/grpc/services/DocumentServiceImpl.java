@@ -10,12 +10,11 @@ package org.opensearch.plugin.transport.grpc.services;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.opensearch.action.bulk.BulkAction;
 import org.opensearch.plugin.transport.grpc.listeners.BulkRequestActionListener;
-import org.opensearch.protobuf.services.DocumentServiceGrpc;
+import org.opensearch.protobufs.services.DocumentServiceGrpc;
 import org.opensearch.transport.client.Client;
 import org.opensearch.plugin.transport.grpc.common.ExceptionHandler;
-import org.opensearch.plugin.transport.grpc.proto.request.BulkRequestProtoUtils;
+import org.opensearch.plugin.transport.grpc.proto.request.document.bulk.BulkRequestProtoUtils;
 
 import io.grpc.stub.StreamObserver;
 
@@ -35,7 +34,7 @@ public class DocumentServiceImpl extends DocumentServiceGrpc.DocumentServiceImpl
     }
 
     @Override
-    public void bulk(org.opensearch.protobuf.BulkRequest request, StreamObserver<org.opensearch.protobuf.BulkResponse> responseObserver) {
+    public void bulk(org.opensearch.protobufs.BulkRequest request, StreamObserver<org.opensearch.protobufs.BulkResponse> responseObserver) {
         try {
             org.opensearch.action.bulk.BulkRequest bulkRequest = BulkRequestProtoUtils.prepareRequest(request);
             BulkRequestActionListener listener = new BulkRequestActionListener(responseObserver);

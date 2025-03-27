@@ -16,13 +16,13 @@ import org.opensearch.action.support.WriteRequest;
 import org.opensearch.core.action.ActionListener;
 import org.opensearch.core.index.Index;
 import org.opensearch.core.index.shard.ShardId;
-import org.opensearch.plugin.transport.grpc.proto.request.BulkRequestProtoUtils;
-import org.opensearch.protobuf.BulkRequest;
-import org.opensearch.protobuf.BulkRequestBody;
-import org.opensearch.protobuf.CreateOperation;
-import org.opensearch.protobuf.DeleteOperation;
-import org.opensearch.protobuf.IndexOperation;
-import org.opensearch.protobuf.UpdateOperation;
+import org.opensearch.plugin.transport.grpc.proto.request.document.bulk.BulkRequestProtoUtils;
+import org.opensearch.protobufs.BulkRequest;
+import org.opensearch.protobufs.BulkRequestBody;
+import org.opensearch.protobufs.CreateOperation;
+import org.opensearch.protobufs.DeleteOperation;
+import org.opensearch.protobufs.IndexOperation;
+import org.opensearch.protobufs.UpdateOperation;
 import org.opensearch.test.OpenSearchTestCase;
 import org.opensearch.transport.client.node.NodeClient;
 import org.junit.Before;
@@ -142,7 +142,7 @@ public class BulkRequestProtoUtilsTests extends OpenSearchTestCase {
         }).when(client).bulk(requestCaptor.capture(), any());
 
         // Execute the request
-        org.opensearch.protobuf.BulkResponse response = handler.executeRequest(request);
+        org.opensearch.protobufs.BulkResponse response = handler.executeRequest(request);
 
         // Verify the response
         assertFalse("Response should indicate no errors", response.getBulkResponseBody().getErrors());

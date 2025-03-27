@@ -9,12 +9,12 @@
 package org.opensearch.plugin.transport.grpc.services.document;
 
 import org.opensearch.plugin.transport.grpc.services.DocumentServiceImpl;
-import org.opensearch.protobuf.BulkRequest;
-import org.opensearch.protobuf.BulkRequestBody;
-import org.opensearch.protobuf.IndexOperation;
+import org.opensearch.protobufs.BulkRequest;
+import org.opensearch.protobufs.BulkRequestBody;
+import org.opensearch.protobufs.IndexOperation;
 import org.opensearch.test.OpenSearchTestCase;
 import org.opensearch.transport.client.node.NodeClient;
-import org.opensearch.plugin.transport.grpc.proto.request.BulkRequestProtoUtils;
+import org.opensearch.plugin.transport.grpc.proto.request.document.bulk.BulkRequestProtoUtils;
 import org.junit.Before;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -45,7 +45,7 @@ public class DocumentServiceImplTests extends OpenSearchTestCase {
     private BulkRequestProtoUtils bulkRequestProtoUtils;
 
     @Mock
-    private StreamObserver<org.opensearch.protobuf.BulkResponse> responseObserver;
+    private StreamObserver<org.opensearch.protobufs.BulkResponse> responseObserver;
 
     @Before
     public void setup() throws IOException {
@@ -59,9 +59,9 @@ public class DocumentServiceImplTests extends OpenSearchTestCase {
         BulkRequest request = createTestBulkRequest();
 
         // Create a test response
-        org.opensearch.protobuf.BulkResponse response = org.opensearch.protobuf.BulkResponse.newBuilder()
+        org.opensearch.protobufs.BulkResponse response = org.opensearch.protobufs.BulkResponse.newBuilder()
             .setBulkResponseBody(
-                org.opensearch.protobuf.BulkResponseBody.newBuilder()
+                org.opensearch.protobufs.BulkResponseBody.newBuilder()
                     .setTook(100)
                     .setErrors(false)
                     .build()

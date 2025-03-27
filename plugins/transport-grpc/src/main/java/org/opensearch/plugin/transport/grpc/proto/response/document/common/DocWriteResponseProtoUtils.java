@@ -5,23 +5,25 @@
  * this file be licensed under the Apache-2.0 license or a
  * compatible open source license.
  */
-package org.opensearch.plugin.transport.grpc.proto.response;
+package org.opensearch.plugin.transport.grpc.proto.response.document.common;
 
 import org.opensearch.action.DocWriteResponse;
-import org.opensearch.action.support.replication.ReplicationResponse;
 import org.opensearch.core.xcontent.ToXContent;
 import org.opensearch.core.xcontent.XContentBuilder;
-import org.opensearch.core.xcontent.XContentParser;
-import org.opensearch.protobuf.*;
+import org.opensearch.protobufs.NullValue;
+import org.opensearch.protobufs.ResponseItem;
+import org.opensearch.protobufs.ShardInfo;
+
+import java.io.IOException;
 
 /**
  * Utility class for converting DocWriteResponse objects to Protocol Buffers.
  * This class handles the conversion of document write operation responses (index, create, update, delete)
  * to their Protocol Buffer representation.
  */
-public class ShardInfoProtoUtils {
+public class DocWriteResponseProtoUtils {
 
-    private ShardInfoProtoUtils() {
+    private DocWriteResponseProtoUtils() {
         // Utility class, no instances
     }
 
@@ -33,7 +35,7 @@ public class ShardInfoProtoUtils {
      * @return A ResponseItem.Builder with the DocWriteResponse data
      *
      */
-    public static ResponseItem.Builder toProto(DocWriteResponse response) {
+    public static ResponseItem.Builder toProto(DocWriteResponse response) throws IOException {
         ResponseItem.Builder responseItem = ResponseItem.newBuilder();
 
         // Set the index name
@@ -57,8 +59,8 @@ public class ShardInfoProtoUtils {
             responseItem.setForcedRefresh(true);
         }
         // Handle shard information
-        ShardStatistics shardStatistics = convertShardInfoProto(response.getShardInfo());
-        responseItem.setShards(shardStatistics);
+        ShardInfo shardInfo = ShardInfoProtoUtils.toProto(response.getShardInfo());
+        responseItem.setShards(shardInfo);
 
         // Set sequence number and primary term if available
         if (response.getSeqNo() >= 0) {
@@ -67,30 +69,5 @@ public class ShardInfoProtoUtils {
         }
 
         return responseItem;
-    }
-
-    /**
-     * Converts a ShardInfo Java object to a protobuf ShardStatistics.
-     * Similar to {@link ReplicationResponse.ShardInfo#fromXContent(XContentParser) }
-     */
-    private static ShardStatistics convertShardInfoProto(ReplicationResponse.ShardInfo shardInfo){
-        ShardStatistics.Builder shardStatistics = ShardStatistics.newBuilder();
-        shardStatistics.setFailed(shardInfo.getFailed());
-        shardStatistics.setSuccessful(shardInfo.getSuccessful());
-        shardStatistics.setTotal(shardInfo.getTotal());
-        // TODO: find the corresponding field for 'skipped'
-        // shardStatistics.setSkipped();
-        // Add any shard failures
-        for (ReplicationResponse.ShardInfo.Failure failure : shardInfo.getFailures()) {
-            ShardFailure.Builder shardFailure = ShardFailure.newBuilder();
-            shardFailure.setIndex(failure.index());
-            shardFailure.setNode(failure.nodeId());
-            // TODO: set error
-            shardFailure.setReason(ErrorCause.newBuilder().build());
-            shardFailure.setShard(failure.shardId());
-            shardFailure.setStatus(failure.status().name());
-            shardStatistics.addFailures(shardFailure);
-        }
-        return shardStatistics.build();
     }
 }

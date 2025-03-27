@@ -14,7 +14,7 @@ import io.grpc.stub.StreamObserver;
 import org.opensearch.action.bulk.BulkResponse;
 import org.opensearch.core.action.ActionListener;
 import org.opensearch.plugin.transport.grpc.common.ExceptionHandler;
-import org.opensearch.plugin.transport.grpc.proto.response.BulkResponseProtoUtils;
+import org.opensearch.plugin.transport.grpc.proto.response.document.bulk.BulkResponseProtoUtils;
 
 
 /**
@@ -22,9 +22,9 @@ import org.opensearch.plugin.transport.grpc.proto.response.BulkResponseProtoUtil
  */
 public class BulkRequestActionListener implements ActionListener<BulkResponse> {
     private static final Logger logger = LogManager.getLogger(BulkRequestActionListener.class);
-    private StreamObserver<org.opensearch.protobuf.BulkResponse> responseObserver;
+    private StreamObserver<org.opensearch.protobufs.BulkResponse> responseObserver;
 
-    public BulkRequestActionListener(StreamObserver<org.opensearch.protobuf.BulkResponse> responseObserver){
+    public BulkRequestActionListener(StreamObserver<org.opensearch.protobufs.BulkResponse> responseObserver){
         super();
         this.responseObserver = responseObserver;
     }
@@ -33,7 +33,7 @@ public class BulkRequestActionListener implements ActionListener<BulkResponse> {
     public void onResponse(org.opensearch.action.bulk.BulkResponse response) {
         // Bulk execution succeeded. Convert the opensearch internal response to protobuf
         try {
-            org.opensearch.protobuf.BulkResponse protoResponse = BulkResponseProtoUtils.toProto(response);
+            org.opensearch.protobufs.BulkResponse protoResponse = BulkResponseProtoUtils.toProto(response);
             responseObserver.onNext(protoResponse);
             responseObserver.onCompleted();
         } catch (Exception e) {

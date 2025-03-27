@@ -6,15 +6,14 @@
  * compatible open source license.
  */
 
-package org.opensearch.plugin.transport.grpc.proto.request;
+package org.opensearch.plugin.transport.grpc.proto.request.common;
 
 import org.opensearch.core.common.Strings;
 import org.opensearch.core.xcontent.XContentParser;
-import org.opensearch.protobuf.SourceConfig;
-import org.opensearch.protobuf.SourceConfigParam;
-import org.opensearch.protobuf.SourceFilter;
+import org.opensearch.protobufs.SourceConfig;
+import org.opensearch.protobufs.SourceConfigParam;
+import org.opensearch.protobufs.SourceFilter;
 import org.opensearch.rest.RestRequest;
-import org.opensearch.script.Script;
 import org.opensearch.search.fetch.subphase.FetchSourceContext;
 
 import java.util.ArrayList;
@@ -38,7 +37,7 @@ public class FetchSourceContextProtoUtils {
      * @param request
      * @return
      */
-    public static FetchSourceContext parseFromProtoRequest(org.opensearch.protobuf.BulkRequest request){
+    public static FetchSourceContext parseFromProtoRequest(org.opensearch.protobufs.BulkRequest request){
         Boolean fetchSource = true;
         String[] sourceExcludes = null;
         String[] sourceIncludes = null;
