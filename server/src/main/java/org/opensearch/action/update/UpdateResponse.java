@@ -196,6 +196,7 @@ public class UpdateResponse extends DocWriteResponse {
             }
             if (getResult != null) {
                 update.setGetResult(
+                    //
                     new GetResult(
                         update.getIndex(),
                         update.getId(),

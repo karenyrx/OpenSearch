@@ -369,10 +369,6 @@ public final class BulkRequestParser {
                         if (fetchSourceContext != null) {
                             updateRequest.fetchSource(fetchSourceContext);
                         }
-                        IndexRequest upsertRequest = updateRequest.upsertRequest();
-                        if (upsertRequest != null) {
-                            upsertRequest.setPipeline(pipeline);
-                        }
 
                         updateRequestConsumer.accept(updateRequest);
                     }

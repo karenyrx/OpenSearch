@@ -8,9 +8,18 @@ import org.gradle.api.attributes.java.TargetJvmEnvironment
  * compatible open source license.
  */
 
+apply plugin: 'opensearch.internal-cluster-test'
+
 opensearchplugin {
   description = 'gRPC based transport implementation'
-  classname = 'org.opensearch.transport.grpc.GrpcPlugin'
+  classname = 'org.opensearch.plugin.transport.grpc.GrpcPlugin'
+}
+
+// temporary until the protobufs jar is published to Maven central and the -SNAPSHOT suffix can be removed from the dependencies section
+repositories {
+  maven {
+    url = 'https://aws.oss.sonatype.org/content/repositories/snapshots'
+  }
 }
 
 dependencies {
@@ -27,6 +36,7 @@ dependencies {
   implementation "io.grpc:grpc-stub:${versions.grpc}"
   implementation "io.grpc:grpc-util:${versions.grpc}"
   implementation "io.perfmark:perfmark-api:0.26.0"
+  implementation "org.opensearch:protobufs:1.0.0-SNAPSHOT" // TODO: remove -SNAPSHOT once protobufs jar is published to Maven central
 }
 
 tasks.named("dependencyLicenses").configure {
