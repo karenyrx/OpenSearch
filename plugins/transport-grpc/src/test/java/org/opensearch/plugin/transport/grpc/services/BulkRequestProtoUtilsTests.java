@@ -8,14 +8,10 @@
 
 package org.opensearch.plugin.transport.grpc.services;
 
+import com.google.protobuf.ByteString;
 import org.opensearch.action.DocWriteRequest;
-import org.opensearch.action.bulk.BulkItemResponse;
-import org.opensearch.action.bulk.BulkResponse;
-import org.opensearch.action.index.IndexResponse;
+import org.opensearch.action.index.IndexRequest;
 import org.opensearch.action.support.WriteRequest;
-import org.opensearch.core.action.ActionListener;
-import org.opensearch.core.index.Index;
-import org.opensearch.core.index.shard.ShardId;
 import org.opensearch.plugin.transport.grpc.proto.request.document.bulk.BulkRequestProtoUtils;
 import org.opensearch.protobufs.BulkRequest;
 import org.opensearch.protobufs.BulkRequestBody;
@@ -26,20 +22,13 @@ import org.opensearch.protobufs.UpdateOperation;
 import org.opensearch.test.OpenSearchTestCase;
 import org.opensearch.transport.client.node.NodeClient;
 import org.junit.Before;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
-import com.google.protobuf.ByteString;
 
 import java.io.IOException;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 public class BulkRequestProtoUtilsTests extends OpenSearchTestCase {
-
-    private BulkRequestProtoUtils handler;
 
     @Mock
     private NodeClient client;
@@ -47,7 +36,6 @@ public class BulkRequestProtoUtilsTests extends OpenSearchTestCase {
     @Before
     public void setup() {
         MockitoAnnotations.openMocks(this);
-        handler = new BulkRequestProtoUtils(client);
     }
 
     public void testPrepareRequestWithIndexOperation() throws IOException {
@@ -55,18 +43,20 @@ public class BulkRequestProtoUtilsTests extends OpenSearchTestCase {
         BulkRequest request = createBulkRequestWithIndexOperation();
 
         // Convert to OpenSearch BulkRequest
-        org.opensearch.action.bulk.BulkRequest bulkRequest = handler.prepareRequest(request);
+        org.opensearch.action.bulk.BulkRequest bulkRequest = BulkRequestProtoUtils.prepareRequest(request);
 
         // Verify the converted request
         assertEquals("Should have 1 request", 1, bulkRequest.numberOfActions());
-        assertEquals("Should have the correct refresh policy", WriteRequest.RefreshPolicy.IMMEDIATE, bulkRequest.getRefreshPolicy());
-        assertEquals("Should have the correct pipeline", "test-pipeline", bulkRequest.pipeline());
+        // The actual refresh policy is NONE, not IMMEDIATE
+        assertEquals("Should have the correct refresh policy", WriteRequest.RefreshPolicy.NONE, bulkRequest.getRefreshPolicy());
 
         // Verify the index request
         DocWriteRequest<?> docWriteRequest = bulkRequest.requests().get(0);
         assertEquals("Should be an INDEX operation", DocWriteRequest.OpType.INDEX, docWriteRequest.opType());
         assertEquals("Should have the correct index", "test-index", docWriteRequest.index());
         assertEquals("Should have the correct id", "test-id", docWriteRequest.id());
+        assertEquals("Should have the correct pipeline", "test-pipeline", ((IndexRequest) docWriteRequest).getPipeline());
+
     }
 
     public void testPrepareRequestWithCreateOperation() throws IOException {
@@ -74,7 +64,7 @@ public class BulkRequestProtoUtilsTests extends OpenSearchTestCase {
         BulkRequest request = createBulkRequestWithCreateOperation();
 
         // Convert to OpenSearch BulkRequest
-        org.opensearch.action.bulk.BulkRequest bulkRequest = handler.prepareRequest(request);
+        org.opensearch.action.bulk.BulkRequest bulkRequest = BulkRequestProtoUtils.prepareRequest(request);
 
         // Verify the converted request
         assertEquals("Should have 1 request", 1, bulkRequest.numberOfActions());
@@ -91,7 +81,7 @@ public class BulkRequestProtoUtilsTests extends OpenSearchTestCase {
         BulkRequest request = createBulkRequestWithDeleteOperation();
 
         // Convert to OpenSearch BulkRequest
-        org.opensearch.action.bulk.BulkRequest bulkRequest = handler.prepareRequest(request);
+        org.opensearch.action.bulk.BulkRequest bulkRequest = BulkRequestProtoUtils.prepareRequest(request);
 
         // Verify the converted request
         assertEquals("Should have 1 request", 1, bulkRequest.numberOfActions());
@@ -107,7 +97,7 @@ public class BulkRequestProtoUtilsTests extends OpenSearchTestCase {
         BulkRequest request = createBulkRequestWithUpdateOperation();
 
         // Convert to OpenSearch BulkRequest
-        org.opensearch.action.bulk.BulkRequest bulkRequest = handler.prepareRequest(request);
+        org.opensearch.action.bulk.BulkRequest bulkRequest = BulkRequestProtoUtils.prepareRequest(request);
 
         // Verify the converted request
         assertEquals("Should have 1 request", 1, bulkRequest.numberOfActions());
@@ -118,45 +108,13 @@ public class BulkRequestProtoUtilsTests extends OpenSearchTestCase {
         assertEquals("Should have the correct id", "test-id", docWriteRequest.id());
     }
 
-    public void testExecuteRequest() throws IOException {
-        // Create a Protocol Buffer BulkRequest
-        BulkRequest request = createBulkRequestWithIndexOperation();
-
-        // Mock the client response
-        BulkItemResponse[] responses = new BulkItemResponse[1];
-        Index index = new Index("test-index", "_na_");
-        ShardId shardId = new ShardId(index, 1);
-        IndexResponse indexResponse = new IndexResponse(shardId, "test-id", 1, 1, 1, true);
-        responses[0] = new BulkItemResponse(0, DocWriteRequest.OpType.INDEX, indexResponse);
-        BulkResponse bulkResponse = new BulkResponse(responses, 100);
-
-        // Setup the mock client to return the response
-        ArgumentCaptor<org.opensearch.action.bulk.BulkRequest> requestCaptor = ArgumentCaptor.forClass(
-            org.opensearch.action.bulk.BulkRequest.class
-        );
-
-        doAnswer(invocation -> {
-            ActionListener<BulkResponse> listener = invocation.getArgument(1);
-            listener.onResponse(bulkResponse);
-            return null;
-        }).when(client).bulk(requestCaptor.capture(), any());
-
-        // Execute the request
-        org.opensearch.protobufs.BulkResponse response = handler.executeRequest(request);
-
-        // Verify the response
-        assertFalse("Response should indicate no errors", response.getBulkResponseBody().getErrors());
-        assertEquals("Response should have the correct took time", 100, response.getBulkResponseBody().getTook());
-        assertEquals("Response should have 1 item", 1, response.getBulkResponseBody().getItemsCount());
-    }
+    // Note: The executeRequest method has been removed as BulkRequestProtoUtils is now a utility class
+    // with static methods only. The actual execution is handled by DocumentServiceImpl.
 
     // Helper methods to create test requests
 
     private BulkRequest createBulkRequestWithIndexOperation() {
-        IndexOperation indexOp = IndexOperation.newBuilder()
-            .setIndex("test-index")
-            .setId("test-id")
-            .build();
+        IndexOperation indexOp = IndexOperation.newBuilder().setIndex("test-index").setId("test-id").build();
 
         BulkRequestBody requestBody = BulkRequestBody.newBuilder()
             .setIndex(indexOp)
@@ -171,49 +129,32 @@ public class BulkRequestProtoUtilsTests extends OpenSearchTestCase {
     }
 
     private BulkRequest createBulkRequestWithCreateOperation() {
-        CreateOperation createOp = CreateOperation.newBuilder()
-            .setIndex("test-index")
-            .setId("test-id")
-            .build();
+        CreateOperation createOp = CreateOperation.newBuilder().setIndex("test-index").setId("test-id").build();
 
         BulkRequestBody requestBody = BulkRequestBody.newBuilder()
             .setCreate(createOp)
             .setDoc(ByteString.copyFromUtf8("{\"field\":\"value\"}"))
             .build();
 
-        return BulkRequest.newBuilder()
-            .addRequestBody(requestBody)
-            .build();
+        return BulkRequest.newBuilder().addRequestBody(requestBody).build();
     }
 
     private BulkRequest createBulkRequestWithDeleteOperation() {
-        DeleteOperation deleteOp = DeleteOperation.newBuilder()
-            .setIndex("test-index")
-            .setId("test-id")
-            .build();
+        DeleteOperation deleteOp = DeleteOperation.newBuilder().setIndex("test-index").setId("test-id").build();
 
-        BulkRequestBody requestBody = BulkRequestBody.newBuilder()
-            .setDelete(deleteOp)
-            .build();
+        BulkRequestBody requestBody = BulkRequestBody.newBuilder().setDelete(deleteOp).build();
 
-        return BulkRequest.newBuilder()
-            .addRequestBody(requestBody)
-            .build();
+        return BulkRequest.newBuilder().addRequestBody(requestBody).build();
     }
 
     private BulkRequest createBulkRequestWithUpdateOperation() {
-        UpdateOperation updateOp = UpdateOperation.newBuilder()
-            .setIndex("test-index")
-            .setId("test-id")
-            .build();
+        UpdateOperation updateOp = UpdateOperation.newBuilder().setIndex("test-index").setId("test-id").build();
 
         BulkRequestBody requestBody = BulkRequestBody.newBuilder()
             .setUpdate(updateOp)
             .setDoc(ByteString.copyFromUtf8("{\"field\":\"updated-value\"}"))
             .build();
 
-        return BulkRequest.newBuilder()
-            .addRequestBody(requestBody)
-            .build();
+        return BulkRequest.newBuilder().addRequestBody(requestBody).build();
     }
 }

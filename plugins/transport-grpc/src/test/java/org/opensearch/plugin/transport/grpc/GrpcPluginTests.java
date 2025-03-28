@@ -17,13 +17,15 @@ import org.opensearch.plugins.NetworkPlugin;
 import org.opensearch.telemetry.tracing.Tracer;
 import org.opensearch.test.OpenSearchTestCase;
 import org.opensearch.threadpool.ThreadPool;
+import org.opensearch.transport.client.Client;
 import org.junit.Before;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
+
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import static org.opensearch.plugin.transport.grpc.Netty4GrpcServerTransport.GRPC_TRANSPORT_SETTING_KEY;
 import static org.opensearch.plugin.transport.grpc.Netty4GrpcServerTransport.SETTING_GRPC_BIND_HOST;
@@ -44,9 +46,10 @@ public class GrpcPluginTests extends OpenSearchTestCase {
     private CircuitBreakerService circuitBreakerService;
 
     @Mock
+    private Client client;
+
     private NetworkService networkService;
 
-    @Mock
     private ClusterSettings clusterSettings;
 
     @Mock
@@ -55,7 +58,28 @@ public class GrpcPluginTests extends OpenSearchTestCase {
     @Before
     public void setup() {
         MockitoAnnotations.openMocks(this);
+        // Use real instances instead of mocks for final classes
+        networkService = new NetworkService(List.of());
+
+        // Create a real ClusterSettings instance with the plugin's settings
         plugin = new GrpcPlugin();
+
+        // Set the client in the plugin
+        plugin.createComponents(
+            client,
+            null, // ClusterService
+            null, // ThreadPool
+            null, // ResourceWatcherService
+            null, // ScriptService
+            null, // NamedXContentRegistry
+            null, // Environment
+            null, // NodeEnvironment
+            null, // NamedWriteableRegistry
+            null, // IndexNameExpressionResolver
+            null  // Supplier<RepositoriesService>
+        );
+
+        clusterSettings = new ClusterSettings(Settings.EMPTY, plugin.getSettings().stream().collect(java.util.stream.Collectors.toSet()));
     }
 
     public void testGetSettings() {
@@ -74,9 +98,7 @@ public class GrpcPluginTests extends OpenSearchTestCase {
     }
 
     public void testGetAuxTransports() {
-        Settings settings = Settings.builder()
-            .put(SETTING_GRPC_PORT.getKey(), "9200-9300")
-            .build();
+        Settings settings = Settings.builder().put(SETTING_GRPC_PORT.getKey(), "9200-9300").build();
 
         Map<String, Supplier<NetworkPlugin.AuxTransport>> transports = plugin.getAuxTransports(
             settings,

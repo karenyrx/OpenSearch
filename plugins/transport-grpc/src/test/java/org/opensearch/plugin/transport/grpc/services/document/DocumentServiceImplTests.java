@@ -8,31 +8,25 @@
 
 package org.opensearch.plugin.transport.grpc.services.document;
 
+import com.google.protobuf.ByteString;
 import org.opensearch.plugin.transport.grpc.services.DocumentServiceImpl;
 import org.opensearch.protobufs.BulkRequest;
 import org.opensearch.protobufs.BulkRequestBody;
 import org.opensearch.protobufs.IndexOperation;
 import org.opensearch.test.OpenSearchTestCase;
 import org.opensearch.transport.client.node.NodeClient;
-import org.opensearch.plugin.transport.grpc.proto.request.document.bulk.BulkRequestProtoUtils;
 import org.junit.Before;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
-import com.google.protobuf.ByteString;
-
-import io.grpc.StatusRuntimeException;
-import io.grpc.stub.StreamObserver;
 
 import java.io.IOException;
 
+import io.grpc.StatusRuntimeException;
+import io.grpc.stub.StreamObserver;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 public class DocumentServiceImplTests extends OpenSearchTestCase {
 
@@ -42,50 +36,31 @@ public class DocumentServiceImplTests extends OpenSearchTestCase {
     private NodeClient client;
 
     @Mock
-    private BulkRequestProtoUtils bulkRequestProtoUtils;
-
-    @Mock
     private StreamObserver<org.opensearch.protobufs.BulkResponse> responseObserver;
 
     @Before
     public void setup() throws IOException {
         MockitoAnnotations.openMocks(this);
         service = new DocumentServiceImpl(client);
-        service.bulkRequestProtoUtils = bulkRequestProtoUtils;
     }
 
     public void testBulkSuccess() throws IOException {
         // Create a test request
         BulkRequest request = createTestBulkRequest();
 
-        // Create a test response
-        org.opensearch.protobufs.BulkResponse response = org.opensearch.protobufs.BulkResponse.newBuilder()
-            .setBulkResponseBody(
-                org.opensearch.protobufs.BulkResponseBody.newBuilder()
-                    .setTook(100)
-                    .setErrors(false)
-                    .build()
-            )
-            .build();
-
-        // Mock the handler to return the test response
-        when(bulkRequestProtoUtils.executeRequest(request)).thenReturn(response);
-
         // Call the bulk method
         service.bulk(request, responseObserver);
 
-        // Verify that the response was sent
-        verify(responseObserver).onNext(response);
-        verify(responseObserver).onCompleted();
+        // Verify that client.bulk was called with any BulkRequest and any ActionListener
+        verify(client).bulk(any(org.opensearch.action.bulk.BulkRequest.class), any());
     }
 
     public void testBulkError() throws IOException {
         // Create a test request
         BulkRequest request = createTestBulkRequest();
 
-        // Mock the handler to throw an exception
-        IOException exception = new IOException("Test exception");
-        when(bulkRequestProtoUtils.executeRequest(request)).thenThrow(exception);
+        // Make the client throw an exception when bulk is called
+        doThrow(new RuntimeException("Test exception")).when(client).bulk(any(org.opensearch.action.bulk.BulkRequest.class), any());
 
         // Call the bulk method
         service.bulk(request, responseObserver);
@@ -95,18 +70,13 @@ public class DocumentServiceImplTests extends OpenSearchTestCase {
     }
 
     private BulkRequest createTestBulkRequest() {
-        IndexOperation indexOp = IndexOperation.newBuilder()
-            .setIndex("test-index")
-            .setId("test-id")
-            .build();
+        IndexOperation indexOp = IndexOperation.newBuilder().setIndex("test-index").setId("test-id").build();
 
         BulkRequestBody requestBody = BulkRequestBody.newBuilder()
             .setIndex(indexOp)
             .setDoc(ByteString.copyFromUtf8("{\"field\":\"value\"}"))
             .build();
 
-        return BulkRequest.newBuilder()
-            .addRequestBody(requestBody)
-            .build();
+        return BulkRequest.newBuilder().addRequestBody(requestBody).build();
     }
 }

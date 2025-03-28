@@ -8,15 +8,10 @@
 
 package org.opensearch.plugin.transport.grpc.proto.request.document.bulk;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.opensearch.action.DocWriteRequest;
 import org.opensearch.action.bulk.BulkRequestParser;
-import org.opensearch.action.bulk.BulkShardRequest;
 import org.opensearch.action.delete.DeleteRequest;
 import org.opensearch.action.index.IndexRequest;
-import org.opensearch.action.support.ActiveShardCount;
-import org.opensearch.action.support.WriteRequest;
 import org.opensearch.action.update.UpdateRequest;
 import org.opensearch.common.lucene.uid.Versions;
 import org.opensearch.core.common.bytes.BytesReference;
@@ -27,15 +22,15 @@ import org.opensearch.index.VersionType;
 import org.opensearch.index.seqno.SequenceNumbers;
 import org.opensearch.plugin.transport.grpc.proto.request.common.FetchSourceContextProtoUtils;
 import org.opensearch.plugin.transport.grpc.proto.request.common.ScriptProtoUtils;
-import org.opensearch.protobufs.*;
-import org.opensearch.rest.RestRequest;
-import org.opensearch.rest.action.document.RestBulkAction;
+import org.opensearch.protobufs.BulkRequest;
+import org.opensearch.protobufs.BulkRequestBody;
+import org.opensearch.protobufs.CreateOperation;
+import org.opensearch.protobufs.DeleteOperation;
+import org.opensearch.protobufs.IndexOperation;
+import org.opensearch.protobufs.UpdateOperation;
 import org.opensearch.script.Script;
 import org.opensearch.search.fetch.subphase.FetchSourceContext;
-import org.opensearch.transport.client.Requests;
-import org.opensearch.transport.client.node.NodeClient;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -47,9 +42,11 @@ import static org.opensearch.index.seqno.SequenceNumbers.UNASSIGNED_PRIMARY_TERM
  *
  */
 public class BulkRequestParserProtoUtils {
-    protected static Logger logger = LogManager.getLogger(BulkRequestParserProtoUtils.class);
-//    protected final Settings settings;
+    // protected final Settings settings;
 
+    /**
+     * Private constructor to prevent instantiation of utility class.
+     */
     protected BulkRequestParserProtoUtils() {
         // Utility class, no instances
     }
@@ -65,7 +62,14 @@ public class BulkRequestParserProtoUtils {
      * @param defaultRequireAlias
      * @return
      */
-    protected static DocWriteRequest<?>[] getDocWriteRequests (BulkRequest request, String defaultIndex, String defaultRouting, FetchSourceContext defaultFetchSourceContext, String defaultPipeline, Boolean defaultRequireAlias) {
+    protected static DocWriteRequest<?>[] getDocWriteRequests(
+        BulkRequest request,
+        String defaultIndex,
+        String defaultRouting,
+        FetchSourceContext defaultFetchSourceContext,
+        String defaultPipeline,
+        Boolean defaultRequireAlias
+    ) {
         List<BulkRequestBody> bulkRequestBodyList = request.getRequestBodyList();
         DocWriteRequest<?>[] docWriteRequests = new DocWriteRequest<?>[bulkRequestBodyList.size()];
 
@@ -78,7 +82,7 @@ public class BulkRequestParserProtoUtils {
             String index = defaultIndex;
             String id = null;
             String routing = defaultRouting;
-//            String routing = getRouting(defaultRouting);
+            // String routing = getRouting(defaultRouting);
             FetchSourceContext fetchSourceContext = defaultFetchSourceContext;
             IndexOperation.OpType opType = null;
             long version = Versions.MATCH_ANY;
@@ -87,37 +91,76 @@ public class BulkRequestParserProtoUtils {
             long ifPrimaryTerm = UNASSIGNED_PRIMARY_TERM;
             int retryOnConflict = 0;
             String pipeline = defaultPipeline;
-//            String pipeline = getPipeline(defaultPipeline);
+            // String pipeline = getPipeline(defaultPipeline);
             boolean requireAlias = defaultRequireAlias != null && defaultRequireAlias;
-//            Boolean requireAlias = getRequireAlias(defaultRequireAlias);
+            // Boolean requireAlias = getRequireAlias(defaultRequireAlias);
 
             // Parse the operation type: create, index, update, delete, or none provided (which is invalid).
             switch (bulkRequestBodyEntry.getOperationContainerCase()) {
                 case CREATE:
                     docWriteRequest = buildCreateRequest(
-                        bulkRequestBodyEntry.getCreate(), bulkRequestBodyEntry.getDoc().toByteArray(),
-                        index, id, routing, version, versionType, pipeline, ifSeqNo, ifPrimaryTerm, requireAlias);
+                        bulkRequestBodyEntry.getCreate(),
+                        bulkRequestBodyEntry.getDoc().toByteArray(),
+                        index,
+                        id,
+                        routing,
+                        version,
+                        versionType,
+                        pipeline,
+                        ifSeqNo,
+                        ifPrimaryTerm,
+                        requireAlias
+                    );
                     break;
                 case INDEX:
                     docWriteRequest = buildIndexRequest(
-                        bulkRequestBodyEntry.getIndex(), bulkRequestBodyEntry.getDoc().toByteArray(),
-                        opType, index, id, routing, version, versionType, pipeline, ifSeqNo, ifPrimaryTerm, requireAlias);
+                        bulkRequestBodyEntry.getIndex(),
+                        bulkRequestBodyEntry.getDoc().toByteArray(),
+                        opType,
+                        index,
+                        id,
+                        routing,
+                        version,
+                        versionType,
+                        pipeline,
+                        ifSeqNo,
+                        ifPrimaryTerm,
+                        requireAlias
+                    );
                     break;
                 case UPDATE:
                     docWriteRequest = buildUpdateRequest(
                         bulkRequestBodyEntry.getUpdate(),
                         bulkRequestBodyEntry.getDoc().toByteArray(),
                         bulkRequestBodyEntry,
-                        index, id, routing, fetchSourceContext, retryOnConflict, pipeline, ifSeqNo, ifPrimaryTerm, requireAlias);
+                        index,
+                        id,
+                        routing,
+                        fetchSourceContext,
+                        retryOnConflict,
+                        pipeline,
+                        ifSeqNo,
+                        ifPrimaryTerm,
+                        requireAlias
+                    );
                     break;
                 case DELETE:
-                    docWriteRequest = buildDeleteRequest(bulkRequestBodyEntry.getDelete(),
-                        index, id, routing, version, versionType,ifSeqNo, ifPrimaryTerm);
+                    docWriteRequest = buildDeleteRequest(
+                        bulkRequestBodyEntry.getDelete(),
+                        index,
+                        id,
+                        routing,
+                        version,
+                        versionType,
+                        ifSeqNo,
+                        ifPrimaryTerm
+                    );
                     break;
                 case OPERATIONCONTAINER_NOT_SET:
                 default:
                     throw new IllegalArgumentException(
-                        "Invalid BulkRequestBody. An OperationContainer (create, index, update, or delete) must be provided.");
+                        "Invalid BulkRequestBody. An OperationContainer (create, index, update, or delete) must be provided."
+                    );
             }
             // Add the request to the bulk request
             docWriteRequests[i] = docWriteRequest;
@@ -125,12 +168,40 @@ public class BulkRequestParserProtoUtils {
         return docWriteRequests;
     }
 
-    protected static IndexRequest buildCreateRequest(CreateOperation createOperation, byte[] document, String index, String id, String routing, long version, VersionType versionType, String pipeline, long ifSeqNo, long ifPrimaryTerm, boolean requireAlias) {
+    /**
+     * Builds an IndexRequest with create flag set to true from a CreateOperation protobuf message.
+     *
+     * @param createOperation The create operation protobuf message
+     * @param document The document content as bytes
+     * @param index The default index name
+     * @param id The default document ID
+     * @param routing The default routing value
+     * @param version The default version
+     * @param versionType The default version type
+     * @param pipeline The default pipeline
+     * @param ifSeqNo The default sequence number for optimistic concurrency control
+     * @param ifPrimaryTerm The default primary term for optimistic concurrency control
+     * @param requireAlias Whether the index must be an alias
+     * @return The constructed IndexRequest
+     */
+    protected static IndexRequest buildCreateRequest(
+        CreateOperation createOperation,
+        byte[] document,
+        String index,
+        String id,
+        String routing,
+        long version,
+        VersionType versionType,
+        String pipeline,
+        long ifSeqNo,
+        long ifPrimaryTerm,
+        boolean requireAlias
+    ) {
         index = createOperation.hasIndex() ? createOperation.getIndex() : index;
         id = createOperation.hasId() ? createOperation.getId() : id;
         routing = createOperation.hasRouting() ? createOperation.getRouting() : routing;
         version = createOperation.hasVersion() ? createOperation.getVersion() : version;
-        if(createOperation.hasVersionType()) {
+        if (createOperation.hasVersionType()) {
             switch (createOperation.getVersionType()) {
                 case VERSION_TYPE_EXTERNAL:
                     versionType = VersionType.EXTERNAL;
@@ -161,13 +232,43 @@ public class BulkRequestParserProtoUtils {
         return indexRequest;
     }
 
-    protected static IndexRequest buildIndexRequest(IndexOperation indexOperation, byte[] document, IndexOperation.OpType opType, String index, String id, String routing, long version, VersionType versionType, String pipeline, long ifSeqNo, long ifPrimaryTerm, boolean requireAlias) {
-        opType = indexOperation.hasOpType()? indexOperation.getOpType() : opType;
+    /**
+     * Builds an IndexRequest from an IndexOperation protobuf message.
+     *
+     * @param indexOperation The index operation protobuf message
+     * @param document The document content as bytes
+     * @param opType The default operation type
+     * @param index The default index name
+     * @param id The default document ID
+     * @param routing The default routing value
+     * @param version The default version
+     * @param versionType The default version type
+     * @param pipeline The default pipeline
+     * @param ifSeqNo The default sequence number for optimistic concurrency control
+     * @param ifPrimaryTerm The default primary term for optimistic concurrency control
+     * @param requireAlias Whether the index must be an alias
+     * @return The constructed IndexRequest
+     */
+    protected static IndexRequest buildIndexRequest(
+        IndexOperation indexOperation,
+        byte[] document,
+        IndexOperation.OpType opType,
+        String index,
+        String id,
+        String routing,
+        long version,
+        VersionType versionType,
+        String pipeline,
+        long ifSeqNo,
+        long ifPrimaryTerm,
+        boolean requireAlias
+    ) {
+        opType = indexOperation.hasOpType() ? indexOperation.getOpType() : opType;
         index = indexOperation.hasIndex() ? indexOperation.getIndex() : index;
         id = indexOperation.hasId() ? indexOperation.getId() : id;
         routing = indexOperation.hasRouting() ? indexOperation.getRouting() : routing;
         version = indexOperation.hasVersion() ? indexOperation.getVersion() : version;
-        if(indexOperation.hasVersionType()) {
+        if (indexOperation.hasVersionType()) {
             switch (indexOperation.getVersionType()) {
                 case VERSION_TYPE_EXTERNAL:
                     versionType = VersionType.EXTERNAL;
@@ -211,12 +312,43 @@ public class BulkRequestParserProtoUtils {
         return indexRequest;
     }
 
-    protected static UpdateRequest buildUpdateRequest(UpdateOperation updateOperation, byte[] document, BulkRequestBody bulkRequestBody, String index, String id, String routing, FetchSourceContext fetchSourceContext, int retryOnConflict, String pipeline, long ifSeqNo, long ifPrimaryTerm, boolean requireAlias) {
+    /**
+     * Builds an UpdateRequest from an UpdateOperation protobuf message.
+     *
+     * @param updateOperation The update operation protobuf message
+     * @param document The document content as bytes
+     * @param bulkRequestBody The bulk request body containing additional update options
+     * @param index The default index name
+     * @param id The default document ID
+     * @param routing The default routing value
+     * @param fetchSourceContext The default fetch source context
+     * @param retryOnConflict The default number of retries on conflict
+     * @param pipeline The default pipeline
+     * @param ifSeqNo The default sequence number for optimistic concurrency control
+     * @param ifPrimaryTerm The default primary term for optimistic concurrency control
+     * @param requireAlias Whether the index must be an alias
+     * @return The constructed UpdateRequest
+     */
+    protected static UpdateRequest buildUpdateRequest(
+        UpdateOperation updateOperation,
+        byte[] document,
+        BulkRequestBody bulkRequestBody,
+        String index,
+        String id,
+        String routing,
+        FetchSourceContext fetchSourceContext,
+        int retryOnConflict,
+        String pipeline,
+        long ifSeqNo,
+        long ifPrimaryTerm,
+        boolean requireAlias
+    ) {
         index = updateOperation.hasIndex() ? updateOperation.getIndex() : index;
         id = updateOperation.hasId() ? updateOperation.getId() : id;
         routing = updateOperation.hasRouting() ? updateOperation.getRouting() : routing;
-        fetchSourceContext = bulkRequestBody.hasSource() ? FetchSourceContextProtoUtils.fromProto(
-            bulkRequestBody.getSource()) : fetchSourceContext;
+        fetchSourceContext = bulkRequestBody.hasSource()
+            ? FetchSourceContextProtoUtils.fromProto(bulkRequestBody.getSource())
+            : fetchSourceContext;
         retryOnConflict = updateOperation.hasRetryOnConflict() ? updateOperation.getRetryOnConflict() : retryOnConflict;
         ifSeqNo = updateOperation.hasIfSeqNo() ? updateOperation.getIfSeqNo() : ifSeqNo;
         ifPrimaryTerm = updateOperation.hasIfPrimaryTerm() ? updateOperation.getIfPrimaryTerm() : ifPrimaryTerm;
@@ -237,10 +369,10 @@ public class BulkRequestParserProtoUtils {
             updateRequest.fetchSource(fetchSourceContext);
         }
         // TODO: test how is upsertRequest used?
-//        IndexRequest upsertRequest = updateRequest.upsertRequest();
-//        if (upsertRequest != null) {
-//            upsertRequest.setPipeline(pipeline);
-//        }
+        // IndexRequest upsertRequest = updateRequest.upsertRequest();
+        // if (upsertRequest != null) {
+        // upsertRequest.setPipeline(pipeline);
+        // }
 
         return updateRequest;
     }
@@ -248,7 +380,22 @@ public class BulkRequestParserProtoUtils {
     /**
      * Similar to {@link UpdateRequest#fromXContent(XContentParser)}
      */
-    protected static UpdateRequest fromProto(UpdateRequest updateRequest, byte[] document, BulkRequestBody bulkRequestBody, UpdateOperation updateOperation) {
+    /**
+     * Populates an UpdateRequest with values from protobuf messages.
+     * Similar to {@link UpdateRequest#fromXContent(XContentParser)}
+     *
+     * @param updateRequest The update request to populate
+     * @param document The document content as bytes
+     * @param bulkRequestBody The bulk request body containing update options
+     * @param updateOperation The update operation protobuf message
+     * @return The populated UpdateRequest
+     */
+    protected static UpdateRequest fromProto(
+        UpdateRequest updateRequest,
+        byte[] document,
+        BulkRequestBody bulkRequestBody,
+        UpdateOperation updateOperation
+    ) {
         // TODO compare with REST
         if (bulkRequestBody.hasScript()) {
             Script script = ScriptProtoUtils.parseFromProtoRequest(bulkRequestBody.getScript());
@@ -292,12 +439,34 @@ public class BulkRequestParserProtoUtils {
         return updateRequest;
     }
 
-    protected static DeleteRequest buildDeleteRequest(DeleteOperation deleteOperation, String index, String id, String routing, long version, VersionType versionType, long ifSeqNo, long ifPrimaryTerm) {
+    /**
+     * Builds a DeleteRequest from a DeleteOperation protobuf message.
+     *
+     * @param deleteOperation The delete operation protobuf message
+     * @param index The default index name
+     * @param id The default document ID
+     * @param routing The default routing value
+     * @param version The default version
+     * @param versionType The default version type
+     * @param ifSeqNo The default sequence number for optimistic concurrency control
+     * @param ifPrimaryTerm The default primary term for optimistic concurrency control
+     * @return The constructed DeleteRequest
+     */
+    protected static DeleteRequest buildDeleteRequest(
+        DeleteOperation deleteOperation,
+        String index,
+        String id,
+        String routing,
+        long version,
+        VersionType versionType,
+        long ifSeqNo,
+        long ifPrimaryTerm
+    ) {
         index = deleteOperation.hasIndex() ? deleteOperation.getIndex() : index;
         id = deleteOperation.hasId() ? deleteOperation.getId() : id;
         routing = deleteOperation.hasRouting() ? deleteOperation.getRouting() : routing;
         version = deleteOperation.hasVersion() ? deleteOperation.getVersion() : version;
-        if(deleteOperation.hasVersionType()) {
+        if (deleteOperation.hasVersionType()) {
             switch (deleteOperation.getVersionType()) {
                 case VERSION_TYPE_EXTERNAL:
                     versionType = VersionType.EXTERNAL;

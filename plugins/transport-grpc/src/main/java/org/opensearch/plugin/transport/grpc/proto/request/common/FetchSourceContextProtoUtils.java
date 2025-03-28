@@ -37,7 +37,7 @@ public class FetchSourceContextProtoUtils {
      * @param request
      * @return
      */
-    public static FetchSourceContext parseFromProtoRequest(org.opensearch.protobufs.BulkRequest request){
+    public static FetchSourceContext parseFromProtoRequest(org.opensearch.protobufs.BulkRequest request) {
         Boolean fetchSource = true;
         String[] sourceExcludes = null;
         String[] sourceIncludes = null;

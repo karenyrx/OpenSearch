@@ -35,7 +35,7 @@ public class BulkResponseProtoUtils {
      * @throws IOException if there's an error during conversion
      */
     public static org.opensearch.protobufs.BulkResponse toProto(BulkResponse response) throws IOException {
-//        System.out.println("=== grpc bulk response=" + response.toString());
+        // System.out.println("=== grpc bulk response=" + response.toString());
 
         org.opensearch.protobufs.BulkResponse.Builder bulkResponse = org.opensearch.protobufs.BulkResponse.newBuilder();
 

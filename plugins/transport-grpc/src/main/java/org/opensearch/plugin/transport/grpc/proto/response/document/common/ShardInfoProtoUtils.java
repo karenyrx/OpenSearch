@@ -11,7 +11,8 @@ import org.opensearch.action.support.replication.ReplicationResponse;
 import org.opensearch.core.xcontent.ToXContent;
 import org.opensearch.core.xcontent.XContentBuilder;
 import org.opensearch.plugin.transport.grpc.proto.response.common.ExceptionProtoUtils;
-import org.opensearch.protobufs.*;
+import org.opensearch.protobufs.ShardFailure;
+import org.opensearch.protobufs.ShardInfo;
 
 import java.io.IOException;
 
@@ -27,9 +28,12 @@ public class ShardInfoProtoUtils {
     /**
      * Converts a ReplicationResponse.ShardInfo Java object to a protobuf ShardStatistics.
      * Similar to {@link ReplicationResponse.ShardInfo#toXContent(XContentBuilder, ToXContent.Params)}
+     *
+     * @param shardInfo The shard information to convert to protobuf format
+     * @return The protobuf representation of the shard information
+     * @throws IOException If there's an error during conversion
      */
     public static ShardInfo toProto(ReplicationResponse.ShardInfo shardInfo) throws IOException {
-        // TODO double check
         ShardInfo.Builder shardInfoBuilder = ShardInfo.newBuilder();
         shardInfoBuilder.setTotal(shardInfo.getTotal());
         shardInfoBuilder.setSuccessful(shardInfo.getSuccessful());
@@ -44,8 +48,12 @@ public class ShardInfoProtoUtils {
     }
 
     /**
+     * Converts a ReplicationResponse.ShardInfo.Failure Java object to a protobuf ShardFailure.
      * Similar to {@link ReplicationResponse.ShardInfo.Failure#toXContent(XContentBuilder, ToXContent.Params)}
-     * @return
+     *
+     * @param failure The shard failure to convert to protobuf format
+     * @return The protobuf representation of the shard failure
+     * @throws IOException If there's an error during conversion
      */
     private static ShardFailure toProto(ReplicationResponse.ShardInfo.Failure failure) throws IOException {
         // TODO double check
@@ -55,7 +63,7 @@ public class ShardInfoProtoUtils {
         shardFailure.setNode(failure.nodeId());
         shardFailure.setReason(ExceptionProtoUtils.generateThrowableProto(failure.getCause()));
         shardFailure.setStatus(failure.status().name());
-//        shardFailure.setPrimary(failure.primary()); // TODO add to spec
+        // shardFailure.setPrimary(failure.primary()); // TODO add to spec
         return shardFailure.build();
     }
 }

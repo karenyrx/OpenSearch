@@ -8,6 +8,7 @@
 package org.opensearch.plugin.transport.grpc.proto.response.document.get;
 
 import com.google.protobuf.ByteString;
+import com.google.protobuf.Struct;
 import org.opensearch.common.document.DocumentField;
 import org.opensearch.core.xcontent.ToXContent;
 import org.opensearch.core.xcontent.XContentBuilder;
@@ -40,13 +41,13 @@ public class GetResultProtoUtils {
     public static ResponseItem.Builder toProto(GetResult getResult, ResponseItem.Builder responseItemBuilder) {
         InlineGetDictUserDefined.Builder inlineGetDictUserDefinedBuilder = InlineGetDictUserDefined.newBuilder();
 
-         responseItemBuilder.setIndex(getResult.getIndex());
-         responseItemBuilder.setId(ResponseItem.Id.newBuilder().setString(getResult.getId()).build());
+        responseItemBuilder.setIndex(getResult.getIndex());
+        responseItemBuilder.setId(ResponseItem.Id.newBuilder().setString(getResult.getId()).build());
 
         if (getResult.isExists()) {
             // Set document version if available
             if (getResult.getVersion() != -1) {
-                 responseItemBuilder.setVersion(getResult.getVersion());
+                responseItemBuilder.setVersion(getResult.getVersion());
             }
             inlineGetDictUserDefinedBuilder = toProtoEmbedded(getResult, inlineGetDictUserDefinedBuilder);
         } else {
@@ -73,13 +74,15 @@ public class GetResultProtoUtils {
         }
 
         // TODO test output once GetDocument GRPC endpoint is implemented
+        Struct.Builder metadataFieldsBuilder = Struct.newBuilder();
         for (DocumentField field : getResult.getMetadataFields().values()) {
-             if (field.getName().equals(IgnoredFieldMapper.NAME)) {
-//                 builder.putMetadataFields(field.getName(), field.getValues());
-             } else {
-//                builder.putMetadataFields(field.getName(), field.<Object>getValue());
-             }
-         }
+            if (field.getName().equals(IgnoredFieldMapper.NAME)) {
+                metadataFieldsBuilder.putFields(field.getName(), DocumentFieldProtoUtils.toProto(field.getValues()));
+            } else {
+                metadataFieldsBuilder.putFields(field.getName(), DocumentFieldProtoUtils.toProto(field.<Object>getValue()));
+            }
+        }
+        builder.setMetadataFields(metadataFieldsBuilder.build());
 
         // Set existence status
         builder.setFound(getResult.isExists());
@@ -90,11 +93,13 @@ public class GetResultProtoUtils {
         }
 
         // TODO test output once GetDocument GRPC endpoint is implemented
-         if (!getResult.getDocumentFields().isEmpty()) {
-             for (DocumentField field : getResult.getDocumentFields().values()) {
-//                 builder.putFields(field.getName(), DocumentFieldProtoUtils.toProto(field.getValues()));
-             }
-         }
+        Struct.Builder documentFieldsBuilder = Struct.newBuilder();
+        if (!getResult.getDocumentFields().isEmpty()) {
+            for (DocumentField field : getResult.getDocumentFields().values()) {
+                documentFieldsBuilder.putFields(field.getName(), DocumentFieldProtoUtils.toProto(field.getValues()));
+            }
+        }
+        builder.setFields(documentFieldsBuilder.build());
 
         return builder;
     }

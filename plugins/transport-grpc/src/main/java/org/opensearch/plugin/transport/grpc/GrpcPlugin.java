@@ -7,7 +7,6 @@
  */
 package org.opensearch.plugin.transport.grpc;
 
-import io.grpc.BindableService;
 import org.opensearch.cluster.metadata.IndexNameExpressionResolver;
 import org.opensearch.cluster.service.ClusterService;
 import org.opensearch.common.network.NetworkService;
@@ -35,6 +34,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import io.grpc.BindableService;
+
 import static org.opensearch.plugin.transport.grpc.Netty4GrpcServerTransport.GRPC_TRANSPORT_SETTING_KEY;
 import static org.opensearch.plugin.transport.grpc.Netty4GrpcServerTransport.SETTING_GRPC_BIND_HOST;
 import static org.opensearch.plugin.transport.grpc.Netty4GrpcServerTransport.SETTING_GRPC_HOST;
@@ -49,11 +50,24 @@ import static org.opensearch.plugin.transport.grpc.Netty4GrpcServerTransport.SET
 public final class GrpcPlugin extends Plugin implements NetworkPlugin {
 
     private Client client;
+
     /**
      * Creates a new GrpcPlugin instance.
      */
     public GrpcPlugin() {}
 
+    /**
+     * Provides auxiliary transports for the plugin.
+     * Creates and returns a map of transport names to transport suppliers.
+     *
+     * @param settings The node settings
+     * @param threadPool The thread pool
+     * @param circuitBreakerService The circuit breaker service
+     * @param networkService The network service
+     * @param clusterSettings The cluster settings
+     * @param tracer The tracer
+     * @return A map of transport names to transport suppliers
+     */
     @Override
     public Map<String, Supplier<AuxTransport>> getAuxTransports(
         Settings settings,
@@ -63,22 +77,31 @@ public final class GrpcPlugin extends Plugin implements NetworkPlugin {
         ClusterSettings clusterSettings,
         Tracer tracer
     ) {
-        if (client == null){
+        if (client == null) {
             throw new RuntimeException("client cannot be null");
         }
-        List<BindableService> grpcServices = registerGRPCServices(
-            new DocumentServiceImpl(client)
-        );
+        List<BindableService> grpcServices = registerGRPCServices(new DocumentServiceImpl(client));
         return Collections.singletonMap(
             GRPC_TRANSPORT_SETTING_KEY,
             () -> new Netty4GrpcServerTransport(settings, grpcServices, networkService)
         );
     }
 
+    /**
+     * Registers gRPC services to be exposed by the transport.
+     *
+     * @param services The gRPC services to register
+     * @return A list of registered bindable services
+     */
     protected List<BindableService> registerGRPCServices(BindableService... services) {
         return List.of(services);
     }
 
+    /**
+     * Returns the settings defined by this plugin.
+     *
+     * @return A list of settings
+     */
     @Override
     public List<Setting<?>> getSettings() {
         return List.of(
@@ -91,6 +114,23 @@ public final class GrpcPlugin extends Plugin implements NetworkPlugin {
         );
     }
 
+    /**
+     * Creates components used by the plugin.
+     * Stores the client for later use in creating gRPC services.
+     *
+     * @param client The client
+     * @param clusterService The cluster service
+     * @param threadPool The thread pool
+     * @param resourceWatcherService The resource watcher service
+     * @param scriptService The script service
+     * @param xContentRegistry The named content registry
+     * @param environment The environment
+     * @param nodeEnvironment The node environment
+     * @param namedWriteableRegistry The named writeable registry
+     * @param indexNameExpressionResolver The index name expression resolver
+     * @param repositoriesServiceSupplier The repositories service supplier
+     * @return A collection of components
+     */
     @Override
     public Collection<Object> createComponents(
         Client client,
@@ -107,6 +147,18 @@ public final class GrpcPlugin extends Plugin implements NetworkPlugin {
     ) {
         this.client = client;
 
-        return super.createComponents(client, clusterService, threadPool, resourceWatcherService, scriptService, xContentRegistry, environment, nodeEnvironment, namedWriteableRegistry, indexNameExpressionResolver, repositoriesServiceSupplier);
+        return super.createComponents(
+            client,
+            clusterService,
+            threadPool,
+            resourceWatcherService,
+            scriptService,
+            xContentRegistry,
+            environment,
+            nodeEnvironment,
+            namedWriteableRegistry,
+            indexNameExpressionResolver,
+            repositoriesServiceSupplier
+        );
     }
 }

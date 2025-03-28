@@ -7,10 +7,11 @@
  */
 package org.opensearch.plugin.transport.grpc.proto.response.document.common;
 
-import com.google.protobuf.Struct;
+import com.google.protobuf.Value;
 import org.opensearch.common.document.DocumentField;
 import org.opensearch.core.xcontent.ToXContent;
 import org.opensearch.core.xcontent.XContentBuilder;
+import org.opensearch.plugin.transport.grpc.proto.response.common.StructProtoUtils;
 
 import java.util.List;
 
@@ -26,28 +27,25 @@ public class DocumentFieldProtoUtils {
     }
 
     /**
-     * Converts a DocumentField to its Protocol Buffer representation.
+     * Converts a DocumentField values (list of objects) to its Protocol Buffer representation.
      * This method is equivalent to the  {@link DocumentField#toXContent(XContentBuilder, ToXContent.Params)}
      *
-     * @param fieldValue The DocumentField to convert
-     * @return A Protobuf builder InlineGetDictUserDefined representation
+     * @param fieldValues The list of DocumentField values to convert
+     * @return A Protobuf Value representation
      */
-    public static Struct toProto(List<Object> fieldValue) {
-
-        Struct.Builder structBuilder = Struct.newBuilder();
-        // TODO how to convert DocumentField to ObjectMap?
-        // Map<String, Object> fieldMap;
-        // if ((field.getValues() instanceof Map)) {
-        //     fieldMap = (Map<String, Object>) field;
-        // } else {
-        //     throw new UnsupportedOperationException("document field is not a map of key/value pairs. Cannot convert to InlineGetDictUserDefined fields protobuf");
-        // }
-
-        // for (Map.Entry<String, Object> entry : fieldMap.entrySet()){
-        //     structBuilder.putFields(entry.getKey(), StructProtoUtils.toProto(entry.getValue()));
-        // }
-        return structBuilder.build();
+    public static Value toProto(List<Object> fieldValues) {
+        return StructProtoUtils.toProto(fieldValues);
     }
 
+    /**
+     * Converts a DocumentField value (object) to its Protocol Buffer representation.
+     * This method is equivalent to the  {@link DocumentField#toXContent(XContentBuilder, ToXContent.Params)}
+     *
+     * @param fieldValue The DocumentField value to convert
+     * @return A Protobuf Value representation
+     */
+    public static Value toProto(Object fieldValue) {
+        return StructProtoUtils.toProto(fieldValue);
+    }
 
 }

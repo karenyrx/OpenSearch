@@ -7,11 +7,13 @@
  */
 package org.opensearch.plugin.transport.grpc.proto.response.common;
 
-import com.google.protobuf.*;
+import com.google.protobuf.ListValue;
+import com.google.protobuf.NullValue;
+import com.google.protobuf.Struct;
+import com.google.protobuf.Value;
 
 import java.util.List;
 import java.util.Map;
-
 
 /**
  * Utility class for converting generic Java objects to google.protobuf.Struct Protobuf type.
@@ -56,9 +58,9 @@ public class StructProtoUtils {
 
             @SuppressWarnings("unchecked")
             Map<String, Object> fieldMap = (Map<String, Object>) javaObject;
-             for (Map.Entry<String, Object> entry : fieldMap.entrySet()) {
-                 structBuilder.putFields(entry.getKey(), toProto(entry.getValue()));
-             }
+            for (Map.Entry<String, Object> entry : fieldMap.entrySet()) {
+                structBuilder.putFields(entry.getKey(), toProto(entry.getValue()));
+            }
             valueBuilder.setStructValue(structBuilder.build());
         } else {
             throw new IllegalArgumentException("Cannot convert " + javaObject.toString() + " to google.protobuf.Struct");
@@ -66,6 +68,4 @@ public class StructProtoUtils {
 
         return valueBuilder.build();
     }
-
-
 }

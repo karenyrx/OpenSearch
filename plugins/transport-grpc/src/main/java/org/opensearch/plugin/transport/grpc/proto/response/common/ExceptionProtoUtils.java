@@ -98,16 +98,16 @@ public class ExceptionProtoUtils {
         */
 
         // Add metadata if the throwable is an OpenSearchException
-         if (throwable instanceof OpenSearchException) {
-             OpenSearchException exception = (OpenSearchException) throwable;
-            //  errorCauseBuilder.setMetadata(metadataToProto(exception));
-         }
+        if (throwable instanceof OpenSearchException) {
+            OpenSearchException exception = (OpenSearchException) throwable;
+            // errorCauseBuilder.setMetadata(metadataToProto(exception));
+        }
 
-         if (cause != null) {
-             errorCauseBuilder.setCausedBy(generateThrowableProto(cause));
-         }
+        if (cause != null) {
+            errorCauseBuilder.setCausedBy(generateThrowableProto(cause));
+        }
 
-         // TODO how to set headers?
+        // TODO how to set headers?
         /*
         if (headers.isEmpty() == false) {
             builder.startObject(HEADER);

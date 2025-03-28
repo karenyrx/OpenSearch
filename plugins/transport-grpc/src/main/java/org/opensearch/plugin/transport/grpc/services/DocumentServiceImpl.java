@@ -10,11 +10,11 @@ package org.opensearch.plugin.transport.grpc.services;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.opensearch.plugin.transport.grpc.common.ExceptionHandler;
 import org.opensearch.plugin.transport.grpc.listeners.BulkRequestActionListener;
+import org.opensearch.plugin.transport.grpc.proto.request.document.bulk.BulkRequestProtoUtils;
 import org.opensearch.protobufs.services.DocumentServiceGrpc;
 import org.opensearch.transport.client.Client;
-import org.opensearch.plugin.transport.grpc.common.ExceptionHandler;
-import org.opensearch.plugin.transport.grpc.proto.request.document.bulk.BulkRequestProtoUtils;
 
 import io.grpc.stub.StreamObserver;
 
@@ -26,13 +26,20 @@ public class DocumentServiceImpl extends DocumentServiceGrpc.DocumentServiceImpl
     private final Client client;
 
     /**
+     * Creates a new DocumentServiceImpl.
      *
-     * @param client: Client for executing actions on the local node
+     * @param client Client for executing actions on the local node
      */
     public DocumentServiceImpl(Client client) {
         this.client = client;
     }
 
+    /**
+     * Processes a bulk request.
+     *
+     * @param request The bulk request to process
+     * @param responseObserver The observer to send the response back to the client
+     */
     @Override
     public void bulk(org.opensearch.protobufs.BulkRequest request, StreamObserver<org.opensearch.protobufs.BulkResponse> responseObserver) {
         try {

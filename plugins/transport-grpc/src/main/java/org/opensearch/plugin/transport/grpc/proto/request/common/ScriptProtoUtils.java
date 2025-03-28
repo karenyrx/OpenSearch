@@ -27,8 +27,12 @@ public class ScriptProtoUtils {
     }
 
     /**
+     *
      * Converts a Script Protocol Buffer to a Script object.
      * Similar to {@link Script#parse(XContentParser)}
+     *
+     * @param script
+     * @return
      */
     public static Script parseFromProtoRequest(org.opensearch.protobufs.Script script) {
         return parseFromProtoRequest(script, DEFAULT_SCRIPT_LANG);
@@ -38,19 +42,19 @@ public class ScriptProtoUtils {
      * Converts a Script Protocol Buffer to a Script object.
      * Similar to {@link Script#parse(XContentParser, String)}
      */
-    private static Script parseFromProtoRequest(org.opensearch.protobufs.Script script, String defaultLang){
+    private static Script parseFromProtoRequest(org.opensearch.protobufs.Script script, String defaultLang) {
         // TODO: support script param
         throw new UnsupportedOperationException("Script param is not supported yet");
     }
 
     /** Parses a protobuf InlineScript to a POJO  */
-    private static String parseInlineScript(InlineScript inlineScript){
+    private static String parseInlineScript(InlineScript inlineScript) {
         // TODO
         return null;
     }
 
-     /** Parses a protobuf StoredScriptId to a POJO  */
-    private static String parseStoredScriptId(StoredScriptId storedScriptId){
+    /** Parses a protobuf StoredScriptId to a POJO  */
+    private static String parseStoredScriptId(StoredScriptId storedScriptId) {
         // TODO
 
         return null;

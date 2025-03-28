@@ -9,9 +9,11 @@
 package org.opensearch.plugin.transport.grpc.proto.request.document.bulk;
 
 import org.opensearch.action.bulk.BulkShardRequest;
+import org.opensearch.action.support.ActiveShardCount;
 import org.opensearch.action.support.WriteRequest;
 import org.opensearch.plugin.transport.grpc.proto.request.common.FetchSourceContextProtoUtils;
 import org.opensearch.protobufs.BulkRequest;
+import org.opensearch.protobufs.WaitForActiveShards;
 import org.opensearch.rest.RestRequest;
 import org.opensearch.rest.action.document.RestBulkAction;
 import org.opensearch.search.fetch.subphase.FetchSourceContext;
@@ -23,13 +25,13 @@ import java.io.IOException;
 /**
  * Handler for bulk requests in gRPC.
  */
-public class BulkRequestProtoUtils {
+public class ActiveShardCountProtoUtils {
     // protected final Settings settings;
 
     /**
      * Private constructor to prevent instantiation of utility class.
      */
-    protected BulkRequestProtoUtils() {
+    protected ActiveShardCountProtoUtils() {
         // Utility class, no instances
     }
 
@@ -51,7 +53,7 @@ public class BulkRequestProtoUtils {
         FetchSourceContext defaultFetchSourceContext = FetchSourceContextProtoUtils.parseFromProtoRequest(request);
         String defaultPipeline = request.hasPipeline() ? request.getPipeline() : null;
 
-        bulkRequest = ActiveShardCountProtoUtils.getActiveShardCount(bulkRequest, request);
+        bulkRequest = getActiveShardCount(bulkRequest, request);
 
         Boolean defaultRequireAlias = request.hasRequireAlias() ? request.getRequireAlias() : null;
 
@@ -91,7 +93,7 @@ public class BulkRequestProtoUtils {
      * @param request The bulk request containing the refresh policy
      * @return The refresh policy as a string, or null if not specified
      */
-    protected static String getRefreshPolicy(org.opensearch.protobufs.BulkRequest request) {
+    protected static String getRefreshPolicy(BulkRequest request) {
         if (!request.hasRefresh()) {
             return null;
         }
@@ -105,5 +107,43 @@ public class BulkRequestProtoUtils {
             default:
                 return WriteRequest.RefreshPolicy.NONE.getValue();
         }
+    }
+
+    /**
+     * Sets the active shard count on the bulk request based on the protobuf request.
+     * Similar to {@link ActiveShardCount#parseString(String)}
+     *
+     * @param bulkRequest The bulk request to modify
+     * @param request The protobuf request containing the active shard count
+     * @return The modified bulk request
+     */
+    protected static org.opensearch.action.bulk.BulkRequest getActiveShardCount(
+        org.opensearch.action.bulk.BulkRequest bulkRequest,
+        BulkRequest request
+    ) {
+        if (!request.hasWaitForActiveShards()) {
+            return bulkRequest;
+        }
+        WaitForActiveShards waitForActiveShards = request.getWaitForActiveShards();
+        switch (waitForActiveShards.getWaitForActiveShardsCase()) {
+            case WaitForActiveShards.WaitForActiveShardsCase.WAIT_FOR_ACTIVE_SHARD_OPTIONS:
+                switch (waitForActiveShards.getWaitForActiveShardOptions()) {
+                    case WAIT_FOR_ACTIVE_SHARD_OPTIONS_UNSPECIFIED:
+                        throw new UnsupportedOperationException("No mapping for WAIT_FOR_ACTIVE_SHARD_OPTIONS_UNSPECIFIED");
+                    case WAIT_FOR_ACTIVE_SHARD_OPTIONS_ALL:
+                        bulkRequest.waitForActiveShards(ActiveShardCount.ALL);
+                        break;
+                    default:
+                        bulkRequest.waitForActiveShards(ActiveShardCount.DEFAULT);
+                        break;
+                }
+                break;
+            case WaitForActiveShards.WaitForActiveShardsCase.INT32_VALUE:
+                bulkRequest.waitForActiveShards(waitForActiveShards.getInt32Value());
+                break;
+            default:
+                throw new UnsupportedOperationException("No mapping for WAIT_FOR_ACTIVE_SHARD_OPTIONS_UNSPECIFIED");
+        }
+        return bulkRequest;
     }
 }
