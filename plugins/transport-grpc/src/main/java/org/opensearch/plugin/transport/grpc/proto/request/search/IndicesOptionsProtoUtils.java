@@ -41,9 +41,9 @@ public class IndicesOptionsProtoUtils {
      */
     public static IndicesOptions fromProtoParameters(SearchRequest request, IndicesOptions defaultSettings) {
         if (!(request.getExpandWildcardsCount() > 0)
-            || !request.hasIgnoreUnavailable()
-            || !request.hasAllowNoIndices()
-            || !request.hasIgnoreThrottled()) {
+            && !request.hasIgnoreUnavailable()
+            && !request.hasAllowNoIndices()
+            && !request.hasIgnoreThrottled()) {
             return defaultSettings;
         }
 
@@ -94,7 +94,7 @@ public class IndicesOptionsProtoUtils {
     /**
      * Keep implementation consistent with {@link IndicesOptions.WildcardStates#updateSetForValue(EnumSet, String)}
      */
-    private static void updateSetForValue(EnumSet<IndicesOptions.WildcardStates> states, SearchRequest.ExpandWildcard wildcard) {
+    public static void updateSetForValue(EnumSet<IndicesOptions.WildcardStates> states, SearchRequest.ExpandWildcard wildcard) {
         switch (wildcard) {
             case EXPAND_WILDCARD_OPEN:
                 states.add(OPEN);

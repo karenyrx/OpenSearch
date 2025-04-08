@@ -11,7 +11,6 @@ import org.opensearch.action.search.SearchPhaseName;
 import org.opensearch.action.search.SearchResponse;
 import org.opensearch.core.xcontent.ToXContent;
 import org.opensearch.core.xcontent.XContentBuilder;
-import org.opensearch.plugin.transport.grpc.proto.request.search.ProtoActionsProtoUtils;
 import org.opensearch.protobufs.ClusterStatistics;
 
 import java.io.IOException;
@@ -77,8 +76,8 @@ public class SearchResponseProtoUtils {
             response.getShardFailures()
         );
 
-        ClustersProtoUtils.toProto(searchResponseBodyProtoBuilder, response.getClusters()); // TODO need to copy?
-        SearchResponseSectionsProtoUtils.toProto(searchResponseBodyProtoBuilder, response); // TODO need to copy?
+        ClustersProtoUtils.toProto(searchResponseBodyProtoBuilder, response.getClusters());
+        SearchResponseSectionsProtoUtils.toProto(searchResponseBodyProtoBuilder, response);
 
         searchResponseProtoBuilder.setResponseBody(searchResponseBodyProtoBuilder.build());
 

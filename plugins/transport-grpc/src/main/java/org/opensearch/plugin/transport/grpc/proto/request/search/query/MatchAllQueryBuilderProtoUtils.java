@@ -30,18 +30,14 @@ public class MatchAllQueryBuilderProtoUtils {
     public static MatchAllQueryBuilder fromProto(MatchAllQuery matchAllQueryProto) {
         MatchAllQueryBuilder matchAllQueryBuilder = new MatchAllQueryBuilder();
 
-        // TODO fix protos
-        // if(matchAllQueryProto.hasBoost()){
-        matchAllQueryBuilder.boost(matchAllQueryProto.getBoost());
-        // }
+        if (matchAllQueryProto.hasBoost()) {
+            matchAllQueryBuilder.boost(matchAllQueryProto.getBoost());
+        }
 
-        // TODO fix protos
-
-        // if(matchAllQueryProto.hasName()){
-        matchAllQueryBuilder.queryName(matchAllQueryProto.getName());
-        // }
+        if (matchAllQueryProto.hasName()) {
+            matchAllQueryBuilder.queryName(matchAllQueryProto.getName());
+        }
 
         return matchAllQueryBuilder;
     }
-
 }

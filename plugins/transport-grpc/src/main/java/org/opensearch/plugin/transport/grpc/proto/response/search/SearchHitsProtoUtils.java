@@ -17,7 +17,7 @@ import org.opensearch.search.SearchHits;
 import java.io.IOException;
 
 /**
- * Utility class for converting SearchResponse objects to Protocol Buffers.
+ * Utility class for converting SearchHits objects to Protocol Buffers.
  * This class handles the conversion of search operation responses to their
  * Protocol Buffer representation.
  */
@@ -31,8 +31,6 @@ public class SearchHitsProtoUtils {
      * Converts a SearchHits to its Protocol Buffer representation.
      * This method is equivalent to {@link SearchHits#toXContent(XContentBuilder, ToXContent.Params)}
      *
-    //   * @param response The SearchHits to convert
-     * @return A Protocol Buffer SearchResponse representation
      * @throws IOException if there's an error during conversion
      */
 
@@ -45,13 +43,11 @@ public class SearchHitsProtoUtils {
         // TODO need to pass parameters
         // boolean totalHitAsInt = params.paramAsBoolean(RestSearchAction.TOTAL_HITS_AS_INT_PARAM, false);
         boolean totalHitAsInt = false;
-        org.opensearch.protobufs.TotalHits.Builder totalHitsBuilder = org.opensearch.protobufs.TotalHits.newBuilder();
-
         if (totalHitAsInt) {
             long total = hits.getTotalHits() == null ? -1 : hits.getTotalHits().value();
-
             totalBuilder.setDoubleValue(total);
         } else if (hits.getTotalHits() != null) {
+            org.opensearch.protobufs.TotalHits.Builder totalHitsBuilder = org.opensearch.protobufs.TotalHits.newBuilder();
             totalHitsBuilder.setValue(hits.getTotalHits().value());
             totalHitsBuilder.setRelation(
                 hits.getTotalHits().relation() == TotalHits.Relation.EQUAL_TO
@@ -59,11 +55,6 @@ public class SearchHitsProtoUtils {
                     : org.opensearch.protobufs.TotalHits.TotalHitsRelation.TOTAL_HITS_RELATION_GTE
             );
             totalBuilder.setTotalHits(totalHitsBuilder.build());
-            //
-            // builder.startObject(Fields.TOTAL);
-            // builder.field("value", totalHits.value);
-            // builder.field("relation", totalHits.relation == Relation.EQUAL_TO ? "eq" : "gte");
-            // builder.endObject();
         }
 
         hitsMetaData.setTotal(totalBuilder.build());
@@ -75,17 +66,10 @@ public class SearchHitsProtoUtils {
         } else {
             hitsMetaData.setMaxScore(maxScoreBuilder.setFloatValue(hits.getMaxScore()).build()).build();
         }
-        long searchHitTime = System.currentTimeMillis();
         for (SearchHit h : hits) {
             hitsMetaData.addHits(SearchHitProtoUtils.toProto(h));
         }
 
-        // TODO should return empty array for 0 hits?
-
-        totalBuilder.setTotalHits(totalHitsBuilder);
-        org.opensearch.protobufs.HitsMetadata hitsMetadata = hitsMetaData.build();
-
-        return hitsMetadata;
+        return hitsMetaData.build();
     }
-
 }

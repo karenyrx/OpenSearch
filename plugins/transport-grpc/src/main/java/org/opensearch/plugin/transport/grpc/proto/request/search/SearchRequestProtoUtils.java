@@ -51,12 +51,12 @@ public class SearchRequestProtoUtils {
     /**
      * Prepare the request for execution.
      * <p>
-     * Similar to {@link RestSearchAction#prepareRequest(RestRequest, NodeClient)} ()}
+     * Similar to {@link RestSearchAction#prepareRequest(RestRequest, NodeClient)}
      * Please ensure to keep both implementations consistent.
      *
-     * @param request the request to execute
-     * @param client
-     * @return the action to execute
+     * @param request the Protocol Buffer SearchRequest to execute
+     * @param client the client to use for execution
+     * @return the SearchRequest to execute
      * @throws IOException if an I/O exception occurred parsing the request and preparing for
      *                     execution
      */
@@ -103,7 +103,6 @@ public class SearchRequestProtoUtils {
         }
         searchRequest.indices(indexArr);
 
-        // TODO check
         SearchSourceBuilderProtoUtils.parseProto(searchRequest.source(), request.getRequestBody());
 
         final int batchedReduceSize = request.hasBatchedReduceSize()
@@ -133,18 +132,10 @@ public class SearchRequestProtoUtils {
         // do not allow 'query_and_fetch' or 'dfs_query_and_fetch' search types
         // from the REST layer. these modes are an internal optimization and should
         // not be specified explicitly by the user.
-        // if (request.hasSearchType()) {
-        SearchRequest.SearchType searchType = request.getSearchType();
-        if (SearchRequest.SearchType.SEARCH_TYPE_QUERY_THEN_FETCH.equals(searchType)
-            || SearchRequest.SearchType.SEARCH_TYPE_DFS_QUERY_THEN_FETCH.equals(searchType)) {
-            throw new IllegalArgumentException("Unsupported search type [" + searchType + "]");
-        } else {
+        if (request.hasSearchType()) {
             searchRequest.searchType(SearchTypeProtoUtils.fromProto(request));
         }
-        // }
-        // System.out.println("before parseSearchSource = " + searchRequest.source());
         parseSearchSource(searchRequest.source(), request, setSize);
-        // System.out.println("after parseSearchSource = " + searchRequest.source());
 
         if (request.hasRequestCache()) {
             searchRequest.requestCache(request.getRequestCache());
@@ -159,10 +150,7 @@ public class SearchRequestProtoUtils {
         searchRequest.indicesOptions(IndicesOptionsProtoUtils.fromRequest(request, searchRequest.indicesOptions()));
         searchRequest.pipeline(request.hasSearchPipeline() ? request.getSearchPipeline() : searchRequest.source().pipeline());
 
-        // TODO test this
-        System.out.println("===before checkProtoTotalHits = " + searchRequest.source());
         checkProtoTotalHits(request, searchRequest);
-        System.out.println("===after checkProtoTotalHits = " + searchRequest.source());
 
         // TODO what does this line do?
         // request.paramAsBoolean(INCLUDE_NAMED_QUERIES_SCORE_PARAM, false);
@@ -185,7 +173,7 @@ public class SearchRequestProtoUtils {
     /**
      * Similar to {@link RestSearchAction#parseSearchSource(SearchSourceBuilder, RestRequest, IntConsumer)}
      */
-    private static void parseSearchSource(
+    public static void parseSearchSource(
         final SearchSourceBuilder searchSourceBuilder,
         org.opensearch.protobufs.SearchRequest request,
         IntConsumer setSize
@@ -304,7 +292,7 @@ public class SearchRequestProtoUtils {
     /**
      * Similar to{@link RestSearchAction#preparePointInTime(org.opensearch.action.search.SearchRequest, RestRequest, NamedWriteableRegistry)}
      */
-    static void preparePointInTime(
+    public static void preparePointInTime(
         org.opensearch.action.search.SearchRequest request,
         org.opensearch.protobufs.SearchRequest protoRequest,
         NamedWriteableRegistry namedWriteableRegistry

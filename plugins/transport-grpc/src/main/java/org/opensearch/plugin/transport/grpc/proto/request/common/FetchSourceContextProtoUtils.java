@@ -131,7 +131,8 @@ public class FetchSourceContextProtoUtils {
                     includesList.add(s);
                 }
                 includes = includesList.toArray(new String[0]);
-            } else if (!sourceFilter.getExcludesList().isEmpty()) {
+            }
+            if (!sourceFilter.getExcludesList().isEmpty()) {
                 List<String> excludesList = new ArrayList<>();
                 for (String s : sourceFilter.getExcludesList()) {
                     excludesList.add(s);

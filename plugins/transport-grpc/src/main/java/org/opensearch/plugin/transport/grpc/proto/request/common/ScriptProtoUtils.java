@@ -49,7 +49,7 @@ public class ScriptProtoUtils {
      * Converts a Script Protocol Buffer to a Script object.
      * Similar to {@link Script#parse(XContentParser, String)}, which internally calls Script#build().
      */
-    private static Script parseFromProtoRequest(org.opensearch.protobufs.Script script, String defaultLang) {
+    public static Script parseFromProtoRequest(org.opensearch.protobufs.Script script, String defaultLang) {
         Objects.requireNonNull(defaultLang);
 
         if (script.hasInlineScript()) {
@@ -64,7 +64,7 @@ public class ScriptProtoUtils {
     /**
      * Parses a protobuf InlineScript to a Script object
      */
-    private static Script parseInlineScript(InlineScript inlineScript, String defaultLang) {
+    public static Script parseInlineScript(InlineScript inlineScript, String defaultLang) {
 
         ScriptType type = ScriptType.INLINE;
 
@@ -86,7 +86,7 @@ public class ScriptProtoUtils {
     /**
      * Parses a protobuf StoredScriptId to a Script object
      */
-    private static Script parseStoredScriptId(StoredScriptId storedScriptId) {
+    public static Script parseStoredScriptId(StoredScriptId storedScriptId) {
         ScriptType type = ScriptType.STORED;
         String lang = null;
         String idOrCode = storedScriptId.getId();
@@ -98,7 +98,7 @@ public class ScriptProtoUtils {
         return new Script(type, lang, idOrCode, options, params);
     }
 
-    private static String parseScriptLanguage(ScriptLanguage language, String defaultLang) {
+    public static String parseScriptLanguage(ScriptLanguage language, String defaultLang) {
         if (language.hasStringValue()) {
             return language.getStringValue();
         }

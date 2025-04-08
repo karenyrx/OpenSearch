@@ -13,8 +13,6 @@ import org.apache.logging.log4j.Logger;
 import org.opensearch.protobufs.SearchRequest;
 import org.opensearch.search.suggest.term.TermSuggestionBuilder;
 
-//import static org.opensearch.protobufs.SearchRequest.SuggestMode.SUGGEST_MODE_MISSING;
-
 public class TermSuggestionBuilderProtoUtils {
     protected static Logger logger = LogManager.getLogger(TermSuggestionBuilderProtoUtils.class);
 

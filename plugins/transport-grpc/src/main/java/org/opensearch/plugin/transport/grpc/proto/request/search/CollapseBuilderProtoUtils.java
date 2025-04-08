@@ -14,7 +14,7 @@ import org.opensearch.search.collapse.CollapseBuilder;
 import java.io.IOException;
 
 /**
- * Utility class for converting SearchSourceBuilder Protocol Buffers to objects
+ * Utility class for converting CollapseBuilder Protocol Buffers to objects
  *
  */
 public class CollapseBuilderProtoUtils {

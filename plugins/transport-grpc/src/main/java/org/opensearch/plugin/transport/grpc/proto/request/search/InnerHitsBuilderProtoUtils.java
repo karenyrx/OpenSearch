@@ -10,6 +10,7 @@ package org.opensearch.plugin.transport.grpc.proto.request.search;
 import org.opensearch.core.xcontent.XContentParser;
 import org.opensearch.index.query.InnerHitBuilder;
 import org.opensearch.plugin.transport.grpc.proto.request.common.FetchSourceContextProtoUtils;
+import org.opensearch.plugin.transport.grpc.proto.request.search.sort.SortBuilderProtoUtils;
 import org.opensearch.protobufs.InnerHits;
 import org.opensearch.protobufs.ScriptField;
 import org.opensearch.search.builder.SearchSourceBuilder;
@@ -89,20 +90,21 @@ public class InnerHitsBuilderProtoUtils {
                 for (Map.Entry<String, ScriptField> entry : innerHit.getScriptFieldsMap().entrySet()) {
                     String name = entry.getKey();
                     ScriptField scriptFieldProto = entry.getValue();
-                    SearchSourceBuilder.ScriptField scriptField = ScriptFieldProtoUtils.fromProto(name, scriptFieldProto);
+                    SearchSourceBuilder.ScriptField scriptField = SearchSourceBuilderProtoUtils.ScriptFieldProtoUtils.fromProto(
+                        name,
+                        scriptFieldProto
+                    );
                     scriptFields.add(scriptField);
                 }
                 innerHitBuilder.setScriptFields(scriptFields);
             }
             if (innerHit.getSortCount() > 0) {
-                // TODO
                 innerHitBuilder.setSorts(SortBuilderProtoUtils.fromProto(innerHit.getSortList()));
             }
             if (innerHit.hasSource()) {
                 innerHitBuilder.setFetchSourceContext(FetchSourceContextProtoUtils.fromProto(innerHit.getSource()));
             }
             if (innerHit.hasHighlight()) {
-                // TODO
                 innerHitBuilder.setHighlightBuilder(HighlightBuilderProtoUtils.fromProto(innerHit.getHighlight()));
             }
             if (innerHit.hasCollapse()) {

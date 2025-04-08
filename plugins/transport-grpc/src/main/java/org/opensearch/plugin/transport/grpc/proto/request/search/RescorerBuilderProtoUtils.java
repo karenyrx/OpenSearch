@@ -28,11 +28,14 @@ public class RescorerBuilderProtoUtils {
      */
 
     public static RescorerBuilder<?> parseFromProto(Rescore rescoreProto) {
+        throw new UnsupportedOperationException("rescore is not supported yet");
+        /*
         RescorerBuilder<?> rescorer = null;
-
         // TODO populate rescorerBuilder
 
         return rescorer;
+
+        */
     }
 
 }

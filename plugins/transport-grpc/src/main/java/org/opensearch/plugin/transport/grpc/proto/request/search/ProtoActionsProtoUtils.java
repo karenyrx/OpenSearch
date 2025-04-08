@@ -8,19 +8,12 @@
 
 package org.opensearch.plugin.transport.grpc.proto.request.search;
 
-import org.opensearch.core.action.ShardOperationFailedException;
-import org.opensearch.core.xcontent.ToXContent;
-import org.opensearch.core.xcontent.XContentBuilder;
 import org.opensearch.index.query.QueryBuilder;
 import org.opensearch.index.query.QueryBuilders;
 import org.opensearch.index.query.QueryStringQueryBuilder;
-import org.opensearch.plugin.transport.grpc.proto.response.search.ShardStatisticsProtoUtils;
-import org.opensearch.protobufs.ResponseBody;
 import org.opensearch.protobufs.SearchRequest;
 import org.opensearch.rest.RestRequest;
 import org.opensearch.rest.action.RestActions;
-
-import java.io.IOException;
 
 public class ProtoActionsProtoUtils {
 
@@ -49,28 +42,4 @@ public class ProtoActionsProtoUtils {
         }
         return queryBuilder;
     }
-
-    /**
-     * Similar to {@link RestActions#buildBroadcastShardsHeader(XContentBuilder, ToXContent.Params, int, int, int, int, ShardOperationFailedException[])}
-
-     * @param total
-     * @param successful
-     * @param skipped
-     * @param failed
-     */
-    // TODO move to response side
-    public static void buildBroadcastShardsHeader(
-        ResponseBody.Builder searchResponseBodyProtoBuilder,
-        int total,
-        int successful,
-        int skipped,
-        int failed,
-        ShardOperationFailedException[] shardFailures
-    ) throws IOException {
-        searchResponseBodyProtoBuilder.setShards(
-            ShardStatisticsProtoUtils.getShardStats(total, successful, skipped, failed, shardFailures)
-        );
-
-    }
-
 }

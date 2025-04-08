@@ -19,7 +19,7 @@ import org.opensearch.protobufs.ShardStatistics;
 import java.io.IOException;
 
 /**
- * Utility class for converting SearchResponse objects to Protocol Buffers.
+ * Utility class for converting ShardStatistics objects to Protocol Buffers.
  * This class handles the conversion of search operation responses to their
  * Protocol Buffer representation.
  */
@@ -33,8 +33,8 @@ public class ShardStatisticsProtoUtils {
      * Converts a ShardStatistics to its Protocol Buffer representation.
      * This method is equivalent to {@link ShardStats#toXContent(XContentBuilder, ToXContent.Params)}
      *
-     * @param total The SearchResponse to convert
-     * @return A Protocol Buffer SearchResponse representation
+     * @param total The ShardStatistics to convert
+     * @return A Protocol Buffer ShardStatistics representation
      */
     public static ShardStatistics getShardStats(
         int total,

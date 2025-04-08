@@ -28,11 +28,15 @@ public class HighlightBuilderProtoUtils {
      */
 
     public static HighlightBuilder fromProto(Highlight highlightProto) {
+
+        throw new UnsupportedOperationException("highlight not supported yet");
+
+        /*
         HighlightBuilder highlightBuilder = new HighlightBuilder();
-
         // TODO populate highlightBuilder
-
         return highlightBuilder;
+        */
+
     }
 
 }

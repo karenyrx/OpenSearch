@@ -42,25 +42,23 @@ public class SearchResponseSectionsProtoUtils {
 
         // TODO: Implement aggregations conversion
         if (response.getAggregations() != null) {
-            // aggregations.toXContent(builder, params);
+            throw new UnsupportedOperationException("aggregation responses are not supported yet");
         }
 
+        // TODO: Implement suggest conversion
         if (response.getSuggest() != null) {
-            // suggest.toXContent(builder, params);
+            throw new UnsupportedOperationException("suggest responses are not supported yet");
         }
 
-        if (response.getProfileResults() != null) {
-            // profileResults.toXContent(builder, params);
+        // TODO: Implement profile results conversion
+        if (response.getProfileResults() != null && !response.getProfileResults().isEmpty()) {
+            throw new UnsupportedOperationException("profile results are not supported yet");
         }
 
         // TODO: Implement search ext builders conversion
         if (response.getInternalResponse().getSearchExtBuilders() != null
             && !response.getInternalResponse().getSearchExtBuilders().isEmpty()) {
-            // builder.startObject(EXT_FIELD.getPreferredName());
-            // for (SearchExtBuilder searchExtBuilder : searchExtBuilders) {
-            // searchExtBuilder.toXContent(builder, params);
-            // }
-            // builder.endObject();
+            throw new UnsupportedOperationException("ext builder responses are not supported yet");
         }
 
         return builder;

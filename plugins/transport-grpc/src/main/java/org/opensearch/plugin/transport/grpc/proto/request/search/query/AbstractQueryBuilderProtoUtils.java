@@ -38,14 +38,9 @@ public class AbstractQueryBuilderProtoUtils {
             result = MatchAllQueryBuilderProtoUtils.fromProto(queryContainer.getMatchAll());
         } else if (queryContainer.hasMatchNone()) {
             result = MatchNoneQueryBuilderProtoUtils.fromProto(queryContainer.getMatchNone());
-        } else if (queryContainer.hasTerms()) {
-            result = TermsQueryBuilderProtoUtils.fromProto(queryContainer.getTerms());
         } else if (queryContainer.getTermCount() > 0) {
             result = TermQueryBuilderProtoUtils.fromProto(queryContainer.getTermMap());
         }
-        // else if (queryContainer.getTermsSetCount() > 0){
-        // // TODO
-        // }
         // TODO add more query types
         else {
             throw new UnsupportedOperationException("Search query type not supported yet.");

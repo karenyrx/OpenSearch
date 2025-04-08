@@ -30,18 +30,14 @@ public class MatchNoneQueryBuilderProtoUtils {
     public static MatchNoneQueryBuilder fromProto(MatchNoneQuery matchNoneQueryProto) {
         MatchNoneQueryBuilder matchNoneQueryBuilder = new MatchNoneQueryBuilder();
 
-        // TODO fix protos
-        // if(matchNoneQueryProto.hasBoost()){
-        matchNoneQueryBuilder.boost(matchNoneQueryProto.getBoost());
-        // }
+        if (matchNoneQueryProto.hasBoost()) {
+            matchNoneQueryBuilder.boost(matchNoneQueryProto.getBoost());
+        }
 
-        // TODO fix protos
-
-        // if(matchNoneQueryProto.hasName()){
-        matchNoneQueryBuilder.queryName(matchNoneQueryProto.getName());
-        // }
+        if (matchNoneQueryProto.hasName()) {
+            matchNoneQueryBuilder.queryName(matchNoneQueryProto.getName());
+        }
 
         return matchNoneQueryBuilder;
     }
-
 }

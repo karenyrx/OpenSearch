@@ -13,7 +13,6 @@ import org.opensearch.index.query.TermQueryBuilder;
 import org.opensearch.plugin.transport.grpc.proto.request.common.ObjectMapProtoUtils;
 import org.opensearch.protobufs.FieldValue;
 import org.opensearch.protobufs.TermQuery;
-import org.opensearch.protobufs.TermQueryFieldValue;
 
 import java.util.Map;
 
@@ -33,7 +32,7 @@ public class TermQueryBuilderProtoUtils {
      * @param termQueryProto
      */
 
-    public static TermQueryBuilder fromProto(Map<String, TermQueryFieldValue> termQueryProto) {
+    public static TermQueryBuilder fromProto(Map<String, TermQuery> termQueryProto) {
         String queryName = null;
         String fieldName = null;
         Object value = null;
@@ -44,45 +43,55 @@ public class TermQueryBuilderProtoUtils {
             throw new IllegalArgumentException("Term query can only have 1 element in the map");
         }
 
-        // TODO remove TermQueryFieldValue and use TermQuery instead.
-
-        for (Map.Entry<String, TermQueryFieldValue> entry : termQueryProto.entrySet()) {
+        for (Map.Entry<String, TermQuery> entry : termQueryProto.entrySet()) {
 
             fieldName = entry.getKey();
 
-            TermQueryFieldValue termQueryFieldValue = entry.getValue();
+            TermQuery termQuery = entry.getValue();
 
-            if (termQueryFieldValue.hasTermQuery()) {
-                TermQuery termQuery = termQueryFieldValue.getTermQuery();
-                // TODO fix protos
-                // if (termQuery.hasName()) {
+            if (termQuery.hasName()) {
                 queryName = termQuery.getName();
-                // }
-                // TODO fix protos
-                // if (termQuery.hasBoost()) {
-                boost = termQuery.getBoost();
-                // }
-
-                FieldValue fieldValue = termQueryFieldValue.getFieldValue();
-
-                switch (fieldValue.getTypeCase()) {
-                    case GENERAL_NUMBER:
-                        // TODO: only assumes float right now
-                        value = fieldValue.getGeneralNumber().getFloatValue();
-                        break;
-                    case STRING_VALUE:
-                        value = fieldValue.getStringValue();
-                        break;
-                    case OBJECT_MAP:
-                        value = ObjectMapProtoUtils.fromProto(fieldValue.getObjectMap());
-                        break;
-                    case BOOL_VALUE:
-                        value = fieldValue.getBoolValue();
-                        break;
-                    default:
-                        throw new IllegalArgumentException("TermQuery field value not recognized");
-                }
             }
+            if (termQuery.hasBoost()) {
+                boost = termQuery.getBoost();
+            }
+
+            FieldValue fieldValue = termQuery.getValue();
+
+            switch (fieldValue.getTypeCase()) {
+                case GENERAL_NUMBER:
+                    switch (fieldValue.getGeneralNumber().getValueCase()) {
+                        case INT32_VALUE:
+                            value = fieldValue.getGeneralNumber().getInt32Value();
+                            break;
+                        case INT64_VALUE:
+                            value = fieldValue.getGeneralNumber().getInt64Value();
+                            break;
+                        case FLOAT_VALUE:
+                            value = fieldValue.getGeneralNumber().getFloatValue();
+                            break;
+                        case DOUBLE_VALUE:
+                            value = fieldValue.getGeneralNumber().getDoubleValue();
+                            break;
+                        default:
+                            throw new IllegalArgumentException(
+                                "Unsupported general nunber type: " + fieldValue.getGeneralNumber().getValueCase()
+                            );
+                    }
+                    break;
+                case STRING_VALUE:
+                    value = fieldValue.getStringValue();
+                    break;
+                case OBJECT_MAP:
+                    value = ObjectMapProtoUtils.fromProto(fieldValue.getObjectMap());
+                    break;
+                case BOOL_VALUE:
+                    value = fieldValue.getBoolValue();
+                    break;
+                default:
+                    throw new IllegalArgumentException("TermQuery field value not recognized");
+            }
+
         }
         TermQueryBuilder termQuery = new TermQueryBuilder(fieldName, value);
         termQuery.boost(boost);
