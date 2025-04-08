@@ -492,7 +492,6 @@ public abstract class AbstractClient implements Client {
         Request request,
         ActionListener<Response> listener
     ) {
-        logger.info("==== Search request POJO: " + request);
         doExecute(action, request, listener);
     }
 
