@@ -11,7 +11,9 @@ package org.opensearch.plugin.transport.grpc.services;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.opensearch.plugin.transport.grpc.listeners.BulkRequestActionListener;
+import org.opensearch.plugin.transport.grpc.listeners.IndexRequestActionListener;
 import org.opensearch.plugin.transport.grpc.proto.request.document.bulk.BulkRequestProtoUtils;
+import org.opensearch.plugin.transport.grpc.proto.request.document.index.IndexRequestProtoUtils;
 import org.opensearch.protobufs.services.DocumentServiceGrpc;
 import org.opensearch.transport.client.Client;
 
@@ -47,6 +49,24 @@ public class DocumentServiceImpl extends DocumentServiceGrpc.DocumentServiceImpl
             client.bulk(bulkRequest, listener);
         } catch (RuntimeException e) {
             logger.error("DocumentServiceImpl failed to process bulk request, request=" + request + ", error=" + e.getMessage());
+            responseObserver.onError(e);
+        }
+    }
+
+    /**
+     * Processes an index document request.
+     *
+     * @param request The index request to process
+     * @param responseObserver The observer to send the response back to the client
+     */
+    @Override
+    public void indexDocument(org.opensearch.protobufs.IndexDocumentRequest request, StreamObserver<org.opensearch.protobufs.IndexDocumentResponse> responseObserver) {
+        try {
+            org.opensearch.action.index.IndexRequest indexRequest = IndexRequestProtoUtils.prepareRequest(request);
+            IndexRequestActionListener listener = new IndexRequestActionListener(responseObserver);
+            client.index(indexRequest, listener);
+        } catch (RuntimeException e) {
+            logger.error("DocumentServiceImpl failed to process index request, request=" + request + ", error=" + e.getMessage());
             responseObserver.onError(e);
         }
     }
