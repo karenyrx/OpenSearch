@@ -52,38 +52,17 @@ public class TermQueryBuilderProtoUtils {
 
         FieldValue fieldValue = termQueryProto.getValue();
 
-        switch (fieldValue.getTypeCase()) {
-            case GENERAL_NUMBER:
-                switch (fieldValue.getGeneralNumber().getValueCase()) {
-                    case INT32_VALUE:
-                        value = fieldValue.getGeneralNumber().getInt32Value();
-                        break;
-                    case INT64_VALUE:
-                        value = fieldValue.getGeneralNumber().getInt64Value();
-                        break;
-                    case FLOAT_VALUE:
-                        value = fieldValue.getGeneralNumber().getFloatValue();
-                        break;
-                    case DOUBLE_VALUE:
-                        value = fieldValue.getGeneralNumber().getDoubleValue();
-                        break;
-                    default:
-                        throw new IllegalArgumentException(
-                            "Unsupported general number type: " + fieldValue.getGeneralNumber().getValueCase()
-                        );
-                }
-                break;
-            case STRING_VALUE:
-                value = fieldValue.getStringValue();
-                break;
-            case OBJECT_MAP:
-                value = ObjectMapProtoUtils.fromProto(fieldValue.getObjectMap());
-                break;
-            case BOOL_VALUE:
-                value = fieldValue.getBoolValue();
-                break;
-            default:
-                throw new IllegalArgumentException("TermQuery field value not recognized");
+        // Handle the simplified FieldValue structure
+        if (fieldValue.hasFloat()) {
+            value = fieldValue.getFloat();
+        } else if (fieldValue.hasString()) {
+            value = fieldValue.getString();
+        } else if (fieldValue.hasBool()) {
+            value = fieldValue.getBool();
+        } else if (fieldValue.hasNullValue()) {
+            value = null;
+        } else {
+            throw new IllegalArgumentException("TermQuery field value not recognized");
         }
 
         if (termQueryProto.hasCaseInsensitive()) {
