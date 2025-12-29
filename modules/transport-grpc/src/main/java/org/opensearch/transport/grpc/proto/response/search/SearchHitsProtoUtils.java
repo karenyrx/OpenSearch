@@ -37,7 +37,7 @@ public class SearchHitsProtoUtils {
      */
     protected static org.opensearch.protobufs.HitsMetadata toProto(SearchHits hits) throws IOException {
         org.opensearch.protobufs.HitsMetadata.Builder hitsMetaData = org.opensearch.protobufs.HitsMetadata.newBuilder();
-        toProto(hits, hitsMetaData);
+        toProto(hits, hitsMetaData, org.opensearch.core.xcontent.ToXContent.EMPTY_PARAMS);
         return hitsMetaData.build();
     }
 
@@ -47,17 +47,22 @@ public class SearchHitsProtoUtils {
      *
      * @param hits The SearchHits to convert
      * @param hitsMetaData The builder to populate with the SearchHits data
+     * @param params The response parameters (extracted from proto request)
      * @throws IOException if there's an error during conversion
      */
-    protected static void toProto(SearchHits hits, org.opensearch.protobufs.HitsMetadata.Builder hitsMetaData) throws IOException {
+    protected static void toProto(
+        SearchHits hits,
+        org.opensearch.protobufs.HitsMetadata.Builder hitsMetaData,
+        org.opensearch.core.xcontent.ToXContent.Params params
+    ) throws IOException {
         // Process total hits information
-        processTotalHits(hits, hitsMetaData);
+        processTotalHits(hits, hitsMetaData, params);
 
         // Process max score information
         processMaxScore(hits, hitsMetaData);
 
         // Process individual hits
-        processHits(hits, hitsMetaData);
+        processHits(hits, hitsMetaData, params);
     }
 
     /**
@@ -65,13 +70,20 @@ public class SearchHitsProtoUtils {
      *
      * @param hits The SearchHits to process
      * @param hitsMetaData The builder to populate with the total hits data
+     * @param params The response parameters (extracted from proto request)
      */
-    private static void processTotalHits(SearchHits hits, org.opensearch.protobufs.HitsMetadata.Builder hitsMetaData) {
+    private static void processTotalHits(
+        SearchHits hits,
+        org.opensearch.protobufs.HitsMetadata.Builder hitsMetaData,
+        org.opensearch.core.xcontent.ToXContent.Params params
+    ) {
         org.opensearch.protobufs.HitsMetadataTotal.Builder totalBuilder = org.opensearch.protobufs.HitsMetadataTotal.newBuilder();
 
-        // TODO need to pass parameters
-        // boolean totalHitAsInt = params.paramAsBoolean(RestSearchAction.TOTAL_HITS_AS_INT_PARAM, false);
-        boolean totalHitAsInt = false;
+        // Extract total_hits_as_int parameter from params
+        boolean totalHitAsInt = params.paramAsBoolean(
+            org.opensearch.rest.action.search.RestSearchAction.TOTAL_HITS_AS_INT_PARAM,
+            false
+        );
 
         if (totalHitAsInt) {
             long total = hits.getTotalHits() == null ? -1 : hits.getTotalHits().value();
@@ -115,13 +127,18 @@ public class SearchHitsProtoUtils {
      *
      * @param hits The SearchHits to process
      * @param hitsMetaData The builder to populate with the hits data
+     * @param params The response parameters (extracted from proto request)
      * @throws IOException if there's an error during conversion
      */
-    private static void processHits(SearchHits hits, org.opensearch.protobufs.HitsMetadata.Builder hitsMetaData) throws IOException {
+    private static void processHits(
+        SearchHits hits,
+        org.opensearch.protobufs.HitsMetadata.Builder hitsMetaData,
+        org.opensearch.core.xcontent.ToXContent.Params params
+    ) throws IOException {
         // Process each hit
         for (SearchHit hit : hits) {
             org.opensearch.protobufs.HitsMetadataHitsInner.Builder hitBuilder = org.opensearch.protobufs.HitsMetadataHitsInner.newBuilder();
-            SearchHitProtoUtils.toProto(hit, hitBuilder);
+            SearchHitProtoUtils.toProto(hit, hitBuilder, params);
             hitsMetaData.addHits(hitBuilder.build());
         }
     }

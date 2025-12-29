@@ -50,7 +50,7 @@ public class SearchHitProtoUtils {
      */
     protected static org.opensearch.protobufs.HitsMetadataHitsInner toProto(SearchHit hit) throws IOException {
         org.opensearch.protobufs.HitsMetadataHitsInner.Builder hitBuilder = org.opensearch.protobufs.HitsMetadataHitsInner.newBuilder();
-        toProto(hit, hitBuilder);
+        toProto(hit, hitBuilder, org.opensearch.core.xcontent.ToXContent.EMPTY_PARAMS);
         return hitBuilder.build();
     }
 
@@ -60,9 +60,14 @@ public class SearchHitProtoUtils {
      *
      * @param hit The SearchHit to convert
      * @param hitBuilder The builder to populate with the SearchHit data
+     * @param params The response parameters (extracted from proto request)
      * @throws IOException if there's an error during conversion
      */
-    protected static void toProto(SearchHit hit, org.opensearch.protobufs.HitsMetadataHitsInner.Builder hitBuilder) throws IOException {
+    protected static void toProto(
+        SearchHit hit,
+        org.opensearch.protobufs.HitsMetadataHitsInner.Builder hitBuilder,
+        org.opensearch.core.xcontent.ToXContent.Params params
+    ) throws IOException {
         // Process shard information
         processShardInfo(hit, hitBuilder);
 
@@ -88,13 +93,13 @@ public class SearchHitProtoUtils {
         SearchSortValuesProtoUtils.toProto(hitBuilder, hit.getSortValues());
 
         // Process matched queries
-        processMatchedQueries(hit, hitBuilder);
+        processMatchedQueries(hit, hitBuilder, params);
 
         // Process explanation
         processExplanation(hit, hitBuilder);
 
         // Process inner hits
-        processInnerHits(hit, hitBuilder);
+        processInnerHits(hit, hitBuilder, params);
     }
 
     /**
@@ -254,17 +259,32 @@ public class SearchHitProtoUtils {
      *
      * @param hit The SearchHit to process
      * @param hitBuilder The builder to populate with the matched queries
+     * @param params The response parameters (extracted from proto request)
      */
-    private static void processMatchedQueries(SearchHit hit, org.opensearch.protobufs.HitsMetadataHitsInner.Builder hitBuilder) {
+    private static void processMatchedQueries(
+        SearchHit hit,
+        org.opensearch.protobufs.HitsMetadataHitsInner.Builder hitBuilder,
+        org.opensearch.core.xcontent.ToXContent.Params params
+    ) {
         if (hit.getMatchedQueries().length > 0) {
-            // TODO pass params in
-            // boolean includeMatchedQueriesScore = params.paramAsBoolean(RestSearchAction.INCLUDE_NAMED_QUERIES_SCORE_PARAM, false);
-            boolean includeMatchedQueriesScore = false;
+            // Extract include_named_queries_score parameter from params
+            boolean includeMatchedQueriesScore = params.paramAsBoolean(
+                org.opensearch.rest.action.search.RestSearchAction.INCLUDE_NAMED_QUERIES_SCORE_PARAM,
+                false
+            );
 
             if (includeMatchedQueriesScore) {
-                // TODO map type is missing in spec
-                // for (Map.Entry<String, Float> entry : matchedQueries.entrySet()) {
-                // hitBuilder.putMatchedqueires(entry.getKey(), entry.getValue());
+                // TODO: map type is missing in spec - proto only supports repeated string matched_queries
+                // Once the proto spec is updated to support matched queries with scores (map<string, float>),
+                // we can uncomment and implement this:
+                // Map<String, Float> matchedQueriesWithScores = hit.getMatchedQueriesAndScores();
+                // for (Map.Entry<String, Float> entry : matchedQueriesWithScores.entrySet()) {
+                //     hitBuilder.putMatchedQueries(entry.getKey(), entry.getValue());
+                // }
+                // For now, fall back to array format since proto doesn't support scores
+                for (String matchedFilter : hit.getMatchedQueries()) {
+                    hitBuilder.addMatchedQueries(matchedFilter);
+                }
             } else {
                 for (String matchedFilter : hit.getMatchedQueries()) {
                     hitBuilder.addMatchedQueries(matchedFilter);
@@ -294,14 +314,18 @@ public class SearchHitProtoUtils {
      *
      * @param hit The SearchHit to process
      * @param hitBuilder The builder to populate with the inner hits
+     * @param params The response parameters (extracted from proto request)
      * @throws IOException if there's an error during conversion
      */
-    private static void processInnerHits(SearchHit hit, org.opensearch.protobufs.HitsMetadataHitsInner.Builder hitBuilder)
-        throws IOException {
+    private static void processInnerHits(
+        SearchHit hit,
+        org.opensearch.protobufs.HitsMetadataHitsInner.Builder hitBuilder,
+        org.opensearch.core.xcontent.ToXContent.Params params
+    ) throws IOException {
         if (hit.getInnerHits() != null) {
             for (Map.Entry<String, SearchHits> entry : hit.getInnerHits().entrySet()) {
                 org.opensearch.protobufs.HitsMetadata.Builder hitsBuilder = org.opensearch.protobufs.HitsMetadata.newBuilder();
-                SearchHitsProtoUtils.toProto(entry.getValue(), hitsBuilder);
+                SearchHitsProtoUtils.toProto(entry.getValue(), hitsBuilder, params);
 
                 hitBuilder.putInnerHits(entry.getKey(), InnerHitsResult.newBuilder().setHits(hitsBuilder.build()).build());
             }

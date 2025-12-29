@@ -45,7 +45,9 @@ public class DocumentServiceImpl extends DocumentServiceGrpc.DocumentServiceImpl
     public void bulk(org.opensearch.protobufs.BulkRequest request, StreamObserver<org.opensearch.protobufs.BulkResponse> responseObserver) {
         try {
             org.opensearch.action.bulk.BulkRequest bulkRequest = BulkRequestProtoUtils.prepareRequest(request);
-            BulkRequestActionListener listener = new BulkRequestActionListener(responseObserver);
+            org.opensearch.transport.grpc.proto.response.document.bulk.BulkResponseParams params =
+                new org.opensearch.transport.grpc.proto.response.document.bulk.BulkResponseParams(request);
+            BulkRequestActionListener listener = new BulkRequestActionListener(responseObserver, params);
             client.bulk(bulkRequest, listener);
         } catch (RuntimeException e) {
             logger.debug("DocumentServiceImpl failed: {} - {}", e.getClass().getSimpleName(), e.getMessage());

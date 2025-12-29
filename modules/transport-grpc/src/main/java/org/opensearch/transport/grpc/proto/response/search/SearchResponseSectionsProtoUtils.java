@@ -32,12 +32,17 @@ public class SearchResponseSectionsProtoUtils {
      *
      * @param builder The Protocol Buffer SearchResponse builder to populate
      * @param response The SearchResponse to convert
+     * @param params The response parameters (extracted from proto request)
      * @throws IOException if there's an error during conversion
      */
-    protected static void toProto(org.opensearch.protobufs.SearchResponse.Builder builder, SearchResponse response) throws IOException {
+    protected static void toProto(
+        org.opensearch.protobufs.SearchResponse.Builder builder,
+        SearchResponse response,
+        org.opensearch.core.xcontent.ToXContent.Params params
+    ) throws IOException {
         // Convert hits using pass by reference
         org.opensearch.protobufs.HitsMetadata.Builder hitsBuilder = org.opensearch.protobufs.HitsMetadata.newBuilder();
-        SearchHitsProtoUtils.toProto(response.getHits(), hitsBuilder);
+        SearchHitsProtoUtils.toProto(response.getHits(), hitsBuilder, params);
         builder.setHits(hitsBuilder.build());
 
         // Convert processor results

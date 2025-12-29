@@ -64,7 +64,9 @@ public class SearchServiceImpl extends SearchServiceGrpc.SearchServiceImplBase {
 
         try {
             org.opensearch.action.search.SearchRequest searchRequest = SearchRequestProtoUtils.prepareRequest(request, client, queryUtils);
-            SearchRequestActionListener listener = new SearchRequestActionListener(responseObserver);
+            org.opensearch.transport.grpc.proto.response.search.SearchResponseParams params =
+                new org.opensearch.transport.grpc.proto.response.search.SearchResponseParams(request);
+            SearchRequestActionListener listener = new SearchRequestActionListener(responseObserver, params);
             client.search(searchRequest, listener);
         } catch (RuntimeException | IOException e) {
             logger.debug("SearchServiceImpl failed to process search request, request=" + request + ", error=" + e.getMessage());

@@ -32,12 +32,13 @@ public class SearchResponseProtoUtils {
      * This method is equivalent to {@link SearchResponse#toXContent(XContentBuilder, ToXContent.Params)}
      *
      * @param response The SearchResponse to convert
+     * @param params The response parameters (extracted from proto request)
      * @return A Protocol Buffer SearchResponse representation
      * @throws IOException if there's an error during conversion
      */
-    public static org.opensearch.protobufs.SearchResponse toProto(SearchResponse response) throws IOException {
+    public static org.opensearch.protobufs.SearchResponse toProto(SearchResponse response, ToXContent.Params params) throws IOException {
         org.opensearch.protobufs.SearchResponse.Builder searchResponseProtoBuilder = org.opensearch.protobufs.SearchResponse.newBuilder();
-        toProto(response, searchResponseProtoBuilder);
+        toProto(response, searchResponseProtoBuilder, params);
         return searchResponseProtoBuilder.build();
     }
 
@@ -47,10 +48,14 @@ public class SearchResponseProtoUtils {
      *
      * @param response The SearchResponse to convert
      * @param searchResponseProtoBuilder The builder to populate with the SearchResponse data
+     * @param params The response parameters (extracted from proto request)
      * @throws IOException if there's an error during conversion
      */
-    public static void toProto(SearchResponse response, org.opensearch.protobufs.SearchResponse.Builder searchResponseProtoBuilder)
-        throws IOException {
+    public static void toProto(
+        SearchResponse response,
+        org.opensearch.protobufs.SearchResponse.Builder searchResponseProtoBuilder,
+        ToXContent.Params params
+    ) throws IOException {
 
         // Set optional fields only if they exist
         if (response.getScrollId() != null) {
@@ -93,7 +98,7 @@ public class SearchResponseProtoUtils {
         ClustersProtoUtils.toProto(searchResponseProtoBuilder, response.getClusters());
 
         // Add search response sections
-        SearchResponseSectionsProtoUtils.toProto(searchResponseProtoBuilder, response);
+        SearchResponseSectionsProtoUtils.toProto(searchResponseProtoBuilder, response, params);
 
     }
 

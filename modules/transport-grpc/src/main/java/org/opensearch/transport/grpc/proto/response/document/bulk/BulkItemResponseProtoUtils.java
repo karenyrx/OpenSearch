@@ -39,11 +39,12 @@ public class BulkItemResponseProtoUtils {
      *
      *
      * @param response The BulkItemResponse to convert
+     * @param params The response parameters (extracted from proto request)
      * @return A Protocol Buffer ResponseItem representation
      * @throws IOException if there's an error during conversion
      *
      */
-    public static ResponseItem toProto(BulkItemResponse response) throws IOException {
+    public static ResponseItem toProto(BulkItemResponse response, ToXContent.Params params) throws IOException {
         ResponseItem.Builder responseItemBuilder;
 
         if (response.isFailed() == false) {
@@ -63,7 +64,7 @@ public class BulkItemResponseProtoUtils {
             int grpcStatusCode = RestToGrpcStatusConverter.getGrpcStatusCode(failure.getStatus());
             responseItemBuilder.setStatus(grpcStatusCode);
 
-            ErrorCause errorCause = OpenSearchExceptionProtoUtils.generateThrowableProto(failure.getCause());
+            ErrorCause errorCause = OpenSearchExceptionProtoUtils.generateThrowableProto(failure.getCause(), params);
             responseItemBuilder.setError(errorCause);
         }
 
