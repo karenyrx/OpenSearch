@@ -59,9 +59,22 @@ public class OpenSearchExceptionProtoUtils {
      * @throws IOException if there's an error during conversion
      */
     public static ErrorCause toProto(OpenSearchException exception) throws IOException {
+        return toProto(exception, ToXContent.EMPTY_PARAMS);
+    }
+
+    /**
+     * Converts an OpenSearchException to its Protocol Buffer representation with params.
+     * This method is equivalent to the {@link OpenSearchException#toXContent(XContentBuilder, ToXContent.Params)}
+     *
+     * @param exception The OpenSearchException to convert
+     * @param params The response parameters (for stack trace control)
+     * @return A Protocol Buffer ErrorCause representation
+     * @throws IOException if there's an error during conversion
+     */
+    public static ErrorCause toProto(OpenSearchException exception, ToXContent.Params params) throws IOException {
         Throwable ex = ExceptionsHelper.unwrapCause(exception);
         if (ex != exception) {
-            return generateThrowableProto(ex);
+            return generateThrowableProto(ex, params);
         } else {
             return innerToProto(
                 exception,
@@ -69,7 +82,8 @@ public class OpenSearchExceptionProtoUtils {
                 exception.getMessage(),
                 exception.getHeaders(),
                 exception.getMetadata(),
-                exception.getCause()
+                exception.getCause(),
+                params
             );
         }
     }
@@ -86,12 +100,28 @@ public class OpenSearchExceptionProtoUtils {
      * @throws IOException if there's an error during conversion
      */
     public static ErrorCause generateThrowableProto(Throwable t) throws IOException {
+        return generateThrowableProto(t, ToXContent.EMPTY_PARAMS);
+    }
+
+    /**
+     * Static helper method that renders {@link OpenSearchException} or {@link Throwable} instances
+     * as Protocol Buffers with params.
+     * <p>
+     * This method is usually used when the {@link Throwable} is rendered as a part of another Protocol Buffer object.
+     * It is equivalent to the {@link OpenSearchException#generateThrowableXContent(XContentBuilder, ToXContent.Params, Throwable)}
+     *
+     * @param t The throwable to convert
+     * @param params The response parameters (for stack trace control)
+     * @return A Protocol Buffer ErrorCause representation
+     * @throws IOException if there's an error during conversion
+     */
+    public static ErrorCause generateThrowableProto(Throwable t, ToXContent.Params params) throws IOException {
         t = ExceptionsHelper.unwrapCause(t);
 
         if (t instanceof OpenSearchException ose) {
-            return toProto(ose);
+            return toProto(ose, params);
         } else {
-            return innerToProto(t, getExceptionName(t), t.getMessage(), emptyMap(), emptyMap(), t.getCause());
+            return innerToProto(t, getExceptionName(t), t.getMessage(), emptyMap(), emptyMap(), t.getCause(), params);
         }
     }
 
@@ -115,6 +145,32 @@ public class OpenSearchExceptionProtoUtils {
         Map<String, List<String>> headers,
         Map<String, List<String>> metadata,
         Throwable cause
+    ) throws IOException {
+        return innerToProto(throwable, type, message, headers, metadata, cause, ToXContent.EMPTY_PARAMS);
+    }
+
+    /**
+     * Inner helper method for converting a Throwable to its Protocol Buffer representation with params.
+     * This method is equivalent to the {@link OpenSearchException#innerToXContent(XContentBuilder, ToXContent.Params, Throwable, String, String, Map, Map, Throwable)}.
+     *
+     * @param throwable The throwable to convert
+     * @param type The exception type
+     * @param message The exception message
+     * @param headers The exception headers
+     * @param metadata The exception metadata
+     * @param cause The exception cause
+     * @param params The response parameters (for stack trace control)
+     * @return A Protocol Buffer ErrorCause representation
+     * @throws IOException if there's an error during conversion
+     */
+    public static ErrorCause innerToProto(
+        Throwable throwable,
+        String type,
+        String message,
+        Map<String, List<String>> headers,
+        Map<String, List<String>> metadata,
+        Throwable cause,
+        ToXContent.Params params
     ) throws IOException {
         ErrorCause.Builder errorCauseBuilder = ErrorCause.newBuilder();
 
@@ -152,7 +208,7 @@ public class OpenSearchExceptionProtoUtils {
         }
 
         if (cause != null) {
-            errorCauseBuilder.setCausedBy(generateThrowableProto(cause));
+            errorCauseBuilder.setCausedBy(generateThrowableProto(cause, params));
         }
 
         if (headers.isEmpty() == false) {
@@ -164,14 +220,20 @@ public class OpenSearchExceptionProtoUtils {
             }
         }
 
-        // Add stack trace
-        errorCauseBuilder.setStackTrace(ExceptionsHelper.stackTrace(throwable));
+        // Add stack trace only if error_trace is enabled (skip=false means include)
+        boolean skipStackTrace = params.paramAsBoolean(
+            OpenSearchException.REST_EXCEPTION_SKIP_STACK_TRACE,
+            OpenSearchException.REST_EXCEPTION_SKIP_STACK_TRACE_DEFAULT
+        );
+        if (!skipStackTrace) {
+            errorCauseBuilder.setStackTrace(ExceptionsHelper.stackTrace(throwable));
+        }
 
         // Add suppressed exceptions
         Throwable[] allSuppressed = throwable.getSuppressed();
         if (allSuppressed.length > 0) {
             for (Throwable suppressed : allSuppressed) {
-                errorCauseBuilder.addSuppressed(generateThrowableProto(suppressed));
+                errorCauseBuilder.addSuppressed(generateThrowableProto(suppressed, params));
             }
         }
 

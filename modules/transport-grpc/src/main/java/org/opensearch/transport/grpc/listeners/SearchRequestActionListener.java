@@ -12,6 +12,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.opensearch.action.search.SearchResponse;
 import org.opensearch.core.action.ActionListener;
+import org.opensearch.core.xcontent.ToXContent;
 import org.opensearch.transport.grpc.proto.response.search.SearchResponseProtoUtils;
 import org.opensearch.transport.grpc.util.GrpcErrorHandler;
 
@@ -27,22 +28,28 @@ public class SearchRequestActionListener implements ActionListener<SearchRespons
     private static final Logger logger = LogManager.getLogger(SearchRequestActionListener.class);
 
     private final StreamObserver<org.opensearch.protobufs.SearchResponse> responseObserver;
+    private final ToXContent.Params params;
 
     /**
      * Constructs a new SearchRequestActionListener.
      *
      * @param responseObserver the gRPC stream observer to send the search response to
+     * @param params the response parameters (extracted from proto request)
      */
-    public SearchRequestActionListener(StreamObserver<org.opensearch.protobufs.SearchResponse> responseObserver) {
+    public SearchRequestActionListener(
+        StreamObserver<org.opensearch.protobufs.SearchResponse> responseObserver,
+        ToXContent.Params params
+    ) {
         super();
         this.responseObserver = responseObserver;
+        this.params = params;
     }
 
     @Override
     public void onResponse(SearchResponse response) {
         // Search execution succeeded. Convert the opensearch internal response to protobuf
         try {
-            org.opensearch.protobufs.SearchResponse protoResponse = SearchResponseProtoUtils.toProto(response);
+            org.opensearch.protobufs.SearchResponse protoResponse = SearchResponseProtoUtils.toProto(response, params);
             responseObserver.onNext(protoResponse);
             responseObserver.onCompleted();
         } catch (RuntimeException | IOException e) {

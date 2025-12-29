@@ -69,7 +69,9 @@ public class DocumentServiceImpl extends DocumentServiceGrpc.DocumentServiceImpl
             );
 
             org.opensearch.action.bulk.BulkRequest bulkRequest = BulkRequestProtoUtils.prepareRequest(request);
-            BulkRequestActionListener listener = new BulkRequestActionListener(wrappedObserver);
+            org.opensearch.transport.grpc.proto.request.GrpcRequest grpcRequest =
+                new org.opensearch.transport.grpc.proto.request.GrpcRequest(request);
+            BulkRequestActionListener listener = new BulkRequestActionListener(wrappedObserver, grpcRequest);
             client.bulk(bulkRequest, listener);
         } catch (CircuitBreakingException e) {
             logger.debug("Circuit breaker tripped for gRPC bulk request: {}", e.getMessage());

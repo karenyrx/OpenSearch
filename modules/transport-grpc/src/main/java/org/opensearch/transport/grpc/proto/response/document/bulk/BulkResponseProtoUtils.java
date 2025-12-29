@@ -30,10 +30,11 @@ public class BulkResponseProtoUtils {
      * This method is equivalent to {@link BulkResponse#toXContent(XContentBuilder, ToXContent.Params)}
      *
      * @param response The BulkResponse to convert
+     * @param params The response parameters (extracted from proto request)
      * @return A Protocol Buffer BulkResponse representation
      * @throws IOException if there's an error during conversion
      */
-    public static org.opensearch.protobufs.BulkResponse toProto(BulkResponse response) throws IOException {
+    public static org.opensearch.protobufs.BulkResponse toProto(BulkResponse response, ToXContent.Params params) throws IOException {
         // System.out.println("=== grpc bulk response=" + response.toString());
 
         org.opensearch.protobufs.BulkResponse.Builder bulkResponse = org.opensearch.protobufs.BulkResponse.newBuilder();
@@ -51,7 +52,7 @@ public class BulkResponseProtoUtils {
 
         // Add individual item responses for each operation in the bulk request
         for (BulkItemResponse bulkItemResponse : response.getItems()) {
-            org.opensearch.protobufs.ResponseItem responseItem = BulkItemResponseProtoUtils.toProto(bulkItemResponse);
+            org.opensearch.protobufs.ResponseItem responseItem = BulkItemResponseProtoUtils.toProto(bulkItemResponse, params);
             org.opensearch.protobufs.Item.Builder itemBuilder = org.opensearch.protobufs.Item.newBuilder();
 
             // Wrap ResponseItem in Item based on operation type

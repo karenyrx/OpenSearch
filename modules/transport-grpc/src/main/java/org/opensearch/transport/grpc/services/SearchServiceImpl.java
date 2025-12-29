@@ -84,7 +84,9 @@ public class SearchServiceImpl extends SearchServiceGrpc.SearchServiceImplBase {
             );
 
             org.opensearch.action.search.SearchRequest searchRequest = SearchRequestProtoUtils.prepareRequest(request, client, queryUtils);
-            SearchRequestActionListener listener = new SearchRequestActionListener(wrappedObserver);
+            org.opensearch.transport.grpc.proto.request.GrpcRequest grpcRequest =
+                new org.opensearch.transport.grpc.proto.request.GrpcRequest(request);
+            SearchRequestActionListener listener = new SearchRequestActionListener(wrappedObserver, grpcRequest);
             client.search(searchRequest, listener);
         } catch (CircuitBreakingException e) {
             logger.debug("Circuit breaker tripped for gRPC search request: {}", e.getMessage());
