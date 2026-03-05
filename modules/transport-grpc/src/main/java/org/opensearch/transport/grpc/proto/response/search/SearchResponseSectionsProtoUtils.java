@@ -70,6 +70,12 @@ public class SearchResponseSectionsProtoUtils {
             }
         }
 
+        // Add profile results if present
+        if (response.getProfileResults() != null && !response.getProfileResults().isEmpty()) {
+            org.opensearch.protobufs.Profile profile = SearchProfileShardResultsProtoUtils.toProto(response.getProfileResults());
+            builder.setProfile(profile);
+        }
+
         // Check for unsupported features
         checkUnsupportedFeatures(response);
     }
@@ -89,11 +95,6 @@ public class SearchResponseSectionsProtoUtils {
         // TODO: Implement suggest conversion
         if (response.getSuggest() != null) {
             throw new UnsupportedOperationException("suggest responses are not supported yet");
-        }
-
-        // TODO: Implement profile results conversion
-        if (response.getProfileResults() != null && !response.getProfileResults().isEmpty()) {
-            throw new UnsupportedOperationException("profile results are not supported yet");
         }
 
         // TODO: Implement search ext builders conversion

@@ -18,6 +18,7 @@ import org.opensearch.test.OpenSearchTestCase;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -335,24 +336,65 @@ public class SearchResponseSectionsProtoUtilsTests extends OpenSearchTestCase {
         assertEquals("suggest responses are not supported yet", exception.getMessage());
     }
 
-    public void testToProtoThrowsUnsupportedOperationExceptionForProfileResults() {
+    public void testToProtoWithProfileResults() throws IOException {
+        // Create profile results
+        Map<String, Long> breakdown = new HashMap<>();
+        breakdown.put("advance", 1000L);
+        org.opensearch.search.profile.ProfileResult queryProfile = new org.opensearch.search.profile.ProfileResult(
+            "TermQuery",
+            "field:value",
+            breakdown,
+            Map.of(),
+            2000L,
+            List.of()
+        );
+        org.opensearch.search.profile.query.CollectorResult collector = new org.opensearch.search.profile.query.CollectorResult(
+            "SimpleCollector",
+            "search_count",
+            1000L,
+            List.of()
+        );
+        org.opensearch.search.profile.query.QueryProfileShardResult queryProfileShardResult =
+            new org.opensearch.search.profile.query.QueryProfileShardResult(List.of(queryProfile), 500L, collector);
+
+        org.opensearch.search.profile.aggregation.AggregationProfileShardResult aggProfileShardResult =
+            new org.opensearch.search.profile.aggregation.AggregationProfileShardResult(Collections.emptyList());
+        org.opensearch.search.profile.fetch.FetchProfileShardResult fetchProfileShardResult =
+            new org.opensearch.search.profile.fetch.FetchProfileShardResult(Collections.emptyList());
+        org.opensearch.search.profile.NetworkTime networkTime = new org.opensearch.search.profile.NetworkTime(100L, 200L);
+
+        org.opensearch.search.profile.ProfileShardResult profileShardResult = new org.opensearch.search.profile.ProfileShardResult(
+            List.of(queryProfileShardResult),
+            aggProfileShardResult,
+            fetchProfileShardResult,
+            networkTime
+        );
+
+        Map<String, org.opensearch.search.profile.ProfileShardResult> profileResults = new HashMap<>();
+        profileResults.put("[node1][index1][0]", profileShardResult);
+
         // Create mock SearchResponse with profile results
         SearchResponse mockResponse = mock(SearchResponse.class);
         when(mockResponse.getHits()).thenReturn(SearchHits.empty());
-        when(mockResponse.getInternalResponse()).thenReturn(mock(SearchResponseSections.class));
+        SearchResponseSections mockSections = mock(SearchResponseSections.class);
+        when(mockResponse.getInternalResponse()).thenReturn(mockSections);
+        when(mockSections.getProcessorResult()).thenReturn(null);
         when(mockResponse.getAggregations()).thenReturn(null);
         when(mockResponse.getSuggest()).thenReturn(null);
-        Map<String, org.opensearch.search.profile.ProfileShardResult> profileResults = new HashMap<>();
-        profileResults.put("shard1", mock(org.opensearch.search.profile.ProfileShardResult.class));
         when(mockResponse.getProfileResults()).thenReturn(profileResults);
+        when(mockSections.getSearchExtBuilders()).thenReturn(null);
 
-        // Call the method under test - should throw UnsupportedOperationException
+        // Call the method under test
         org.opensearch.protobufs.SearchResponse.Builder builder = org.opensearch.protobufs.SearchResponse.newBuilder();
-        UnsupportedOperationException exception = expectThrows(
-            UnsupportedOperationException.class,
-            () -> SearchResponseSectionsProtoUtils.toProto(builder, mockResponse)
-        );
-        assertEquals("profile results are not supported yet", exception.getMessage());
+        SearchResponseSectionsProtoUtils.toProto(builder, mockResponse);
+        org.opensearch.protobufs.SearchResponse protoResponse = builder.build();
+
+        // Verify profile results were converted
+        assertTrue("Profile should be set", protoResponse.hasProfile());
+        assertEquals("Should have 1 shard profile", 1, protoResponse.getProfile().getShardsCount());
+        assertEquals("Shard ID should match", "[node1][index1][0]", protoResponse.getProfile().getShards(0).getId());
+        assertEquals("Should have 1 search profile", 1, protoResponse.getProfile().getShards(0).getSearchesCount());
+        assertEquals("Query type should match", "TermQuery", protoResponse.getProfile().getShards(0).getSearches(0).getQuery(0).getType());
     }
 
     public void testToProtoThrowsUnsupportedOperationExceptionForSearchExtBuilders() {
